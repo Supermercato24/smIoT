@@ -1,0 +1,39 @@
+{
+  "version": "0.0.1",
+  "name": "smIoT",
+  "description": "thesis",
+  "keywords": [
+    "supermercato24",
+    "IoT"
+  ],
+  "preferGlobal": false,
+  "homepage": "https://github.com/Supermercato24/smIoT",
+  "author": {
+    "name": "hex7c0",
+    "email": "hex7c0@gmail.com",
+    "url": "https://hex7c0.github.io/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Supermercato24/smIoT.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Supermercato24/smIoT/issues",
+    "email": "devs@supermercato24.it"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "mqtt-connection": "3.0.0",
+    "redis": "2.6.4"
+  },
+  "devDependencies": {
+  },
+  "engines": {
+    "node": ">=4"
+  },
+  "scripts": {
+    "test": "mocha --bail --check-leaks",
+    "test-cov": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly"
+  },
+  "license": "GPL-3.0"
+}
