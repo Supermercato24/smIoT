@@ -29,6 +29,7 @@
     "redis": "2.6.5"
   },
   "devDependencies": {
+    "istanbul": "~0.4",
     "mqtt": "~2.2",
     "mocha": "~3.2"
   },
