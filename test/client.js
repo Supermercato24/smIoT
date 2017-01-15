@@ -11,7 +11,7 @@ var topic1 = userToken1;
 var channel0 = topic0 + '/' + topic0;
 var channel1 = topic1 + '/' + topic1;
 
-describe('clients', function() {
+describe('client', function() {
 
   var broker;
   var server;
@@ -144,8 +144,6 @@ describe('clients', function() {
   describe('subscription', function() {
 
     var client0;
-    var topic0 = userToken0;
-    var topic1 = userToken1;
 
     describe('without publishing', function() {
 
@@ -462,6 +460,7 @@ describe('clients', function() {
 
   describe('unsubscription', function() {
 
+    var statement = 'server is still subscribed to ';
     var client0;
 
     describe('single topic', function() {
@@ -495,7 +494,7 @@ describe('clients', function() {
               broker.publish(channel0, message, function(err, count) {
 
                 assert.ifError(err);
-                assert.equal(count, 1, 'server is still subscribed to 0');
+                assert.equal(count, 1, statement + 0);
 
                 client0.end(function(err) {
 
@@ -547,12 +546,12 @@ describe('clients', function() {
               broker.publish(channel0, message, function(err, count) {
 
                 assert.ifError(err);
-                assert.equal(count, 1, 'server is still subscribed to 0');
+                assert.equal(count, 1, statement + 0);
 
                 broker.publish(channel0, message, function(err, count) {
 
                   assert.ifError(err);
-                  assert.equal(count, 1, 'server is still subscribed to 0');
+                  assert.equal(count, 1, statement + 0);
 
                   client0.end(function(err) {
 
@@ -577,6 +576,7 @@ describe('clients', function() {
         });
       });
     });
+
     describe('multiple topics', function() {
 
       it('should receive (0/1) message', function(done) {
@@ -612,7 +612,7 @@ describe('clients', function() {
               broker.publish(channel0, message, function(err, count) {
 
                 assert.ifError(err);
-                assert.equal(count, 1, 'server is still subscribed to 0');
+                assert.equal(count, 1, statement + 0);
 
                 client0.end(function(err) {
 
@@ -620,7 +620,7 @@ describe('clients', function() {
                   broker.publish(channel0, message, function(err, count) {
 
                     assert.ifError(err);
-                    assert.equal(count, 1, 'server is still subscribed to 1');
+                    assert.equal(count, 1, statement + 1);
                     done();
                   });
                 });
@@ -642,57 +642,54 @@ describe('clients', function() {
           username: userToken0
         });
 
-        client0.on(
-          'connect',
-          function(packet) {
+        client0.on('connect', function(packet) {
 
-            assert.ok(client0.connected);
-            assert.ifError(client0.reconnecting);
-            assert.equal(packet.cmd, 'connack');
+          assert.ok(client0.connected);
+          assert.ifError(client0.reconnecting);
+          assert.equal(packet.cmd, 'connack');
 
-            client0.subscribe([ topic1, topic0 ], function(err, topics) {
+          client0.subscribe([ topic1, topic0 ], function(err, topics) {
+
+            assert.ifError(err);
+            for (var i = 0, ii = topics.length; i < ii; ++i) {
+              if (i == 0) {
+                assert.equal(topics[i].topic, topic1);
+              } else {
+                assert.equal(topics[i].topic, topic0);
+              }
+              assert.equal(topics[i].qos, 0);
+            }
+            assert.equal(ii, 2);
+
+            client0.unsubscribe([ topic0 ], function(err, topics) {
 
               assert.ifError(err);
-              for (var i = 0, ii = topics.length; i < ii; ++i) {
-                if (i == 0) {
-                  assert.equal(topics[i].topic, topic1);
-                } else {
-                  assert.equal(topics[i].topic, topic0);
-                }
-                assert.equal(topics[i].qos, 0);
-              }
-              assert.equal(ii, 2);
 
-              client0.unsubscribe([ topic0 ], function(err, topics) {
+              broker.publish(channel0, message, function(err, count) {
 
                 assert.ifError(err);
+                assert.equal(count, 1, statement + 0);
 
                 broker.publish(channel0, message, function(err, count) {
 
                   assert.ifError(err);
-                  assert.equal(count, 1, 'server is still subscribed to 0');
+                  assert.equal(count, 1, statement + 0);
 
-                  broker.publish(channel0, message, function(err, count) {
+                  client0.end(function(err) {
 
                     assert.ifError(err);
-                    assert.equal(count, 1, 'server is still subscribed to 0');
-
-                    client0.end(function(err) {
+                    broker.publish(channel0, message, function(err, count) {
 
                       assert.ifError(err);
-                      broker.publish(channel0, message, function(err, count) {
-
-                        assert.ifError(err);
-                        assert.equal(count, 1,
-                          'server is still subscribed to 1');
-                        done();
-                      });
+                      assert.equal(count, 1, statement + 1);
+                      done();
                     });
                   });
                 });
               });
             });
-          }).on('error', function(err) {
+          });
+        }).on('error', function(err) {
 
           done(new Error('shouldn\'t emit error event'));
         }).on('message', function(topic, message, packet) {
