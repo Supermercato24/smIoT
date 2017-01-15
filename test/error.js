@@ -1,8 +1,10 @@
 'use strict';
 
 var assert = require('assert');
+var fs = require('fs');
 var mqtt = require('mqtt');
 
+var message = 'helloWorld!';
 var userToken0 = 'foo';
 var userToken1 = 'bar';
 
@@ -52,7 +54,10 @@ describe('error', function() {
     before(function(done) {
 
       server = require('..')({
-        timeout: 50
+        timeout: 50,
+        logger: {
+          filename: message
+        }
       });
       server.once('listening', done).on('error', function(err) {
 
@@ -126,7 +131,10 @@ describe('error', function() {
     before(function(done) {
 
       server = require('..')({
-        maxListeners: 1
+        maxListeners: 1,
+        logger: {
+          filename: message
+        }
       });
       server.once('listening', done).on('error', function(err) {
 
@@ -203,6 +211,9 @@ describe('error', function() {
       server = require('..')({
         net: {
           port: 1884
+        },
+        logger: {
+          filename: message
         }
       });
       server.once('listening', done).on('error', function(err) {
@@ -248,4 +259,21 @@ describe('error', function() {
     done();
   });
 
+  after(function(done) {
+
+    var pad = function(val, len) {
+
+      var val = String(val);
+      var len = len || 2;
+      while (val.length < len) {
+        val = '0' + val;
+      }
+      return val;
+    };
+
+    var date = new Date();
+    var dailyF = date.getUTCFullYear() + '-' + pad(date.getUTCMonth() + 1)
+      + '-' + pad(date.getUTCDate()) + '.' + message;
+    fs.unlink(dailyF, done);
+  });
 });

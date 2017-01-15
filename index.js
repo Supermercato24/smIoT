@@ -3,6 +3,7 @@
 var EventEmitter = require('events');
 var net = require('net');
 var mqttConnection = require('mqtt-connection');
+var logger = require('logger-request');
 
 var broker = require('./lib/broker');
 
@@ -28,10 +29,11 @@ var returnCode = {
  */
 function wrapper(options) {
 
-  var serverInterface = new net.Server();
-  var brokerClient = new broker.Client(options.broker).client;
-  var consumerInterface = brokerClient.duplicate();
   var dispatcher = new EventEmitter();
+  var serverInterface = new net.Server();
+  var brokerInterface = new broker.Client(options.broker).client;
+  var consumerInterface = brokerInterface.duplicate();
+  var log = logger(options.logger);
 
   dispatcher.setMaxListeners(options.maxListeners);
 
@@ -117,18 +119,32 @@ function wrapper(options) {
         return;
       }
 
-      brokerClient.get(userToken, function(err, userId) {
+      brokerInterface.get(userToken, function(err, userId) {
 
         if (err) {
-          console.error('mqtt connect err', err);
+          log('connect', {
+            pid: process.pid,
+            error: err.message,
+            stack: err.stack
+          });
         } else if (userId) { // client init
-          response.returnCode = returnCode.CONNECTION_ACCEPTED;
+
+          dispatcher.on(userId, publisher);
+
           client.authorized = true;
           client.topics = {};
+          client.clientId = packet.clientId;
           client.userId = userId;
           client.userToken = userToken;
           client.topicPrefix = userId + '/';
-          dispatcher.on(userId, publisher);
+
+          response.returnCode = returnCode.CONNECTION_ACCEPTED;
+
+          log('connect', {
+            pid: process.pid,
+            userId: userId,
+            clientId: packet.clientId
+          });
         } else {
           response.returnCode = returnCode.CONNECTION_REFUSED_BAD_CREDENTIALS;
         }
@@ -173,7 +189,12 @@ function wrapper(options) {
       consumerInterface.subscribe(channels, function(err, latestChannel) {
 
         if (err) {
-          console.error('mqtt subscribe err', err);
+          log('subscribe', {
+            pid: process.pid,
+            error: err.message,
+            stack: err.stack
+          });
+
           response.granted = notGranted;
         } else if (latestChannel) {
           Object.assign(client.topics, subscriptions);
@@ -219,6 +240,12 @@ function wrapper(options) {
 
     client.once('close', function() {
 
+      log('close', {
+        pid: process.pid,
+        userId: client.userId,
+        clientId: client.clientId
+      });
+
       if (client.stream.destroyed === false) {
         client.destroy();
       }
@@ -239,7 +266,12 @@ function wrapper(options) {
         consumerInterface.unsubscribe(unsubscriptions, function(err) {
 
           if (err) {
-            console.error('mqtt close err', err);
+            log('close', {
+              pid: process.pid,
+              error: err.message,
+              stack: err.stack
+            });
+
           } else {
             client.topics = {};
           }
@@ -254,7 +286,12 @@ function wrapper(options) {
 
     client.once('error', function(err) {
 
-      console.error('mqtt err', err);
+      log('mqtt', {
+        pid: process.pid,
+        error: err.message,
+        stack: err.stack
+      });
+
       client.destroy();
     });
 
@@ -266,11 +303,14 @@ function wrapper(options) {
 
   serverInterface.on('error', function(err) {
 
-    // TODO add ErrorLogger
-    console.error('net err', err);
+    log('server', {
+      pid: process.pid,
+      error: err.message,
+      stack: err.stack
+    });
   });
 
-  brokerClient.once('ready', function() {
+  brokerInterface.once('ready', function() {
 
     serverInterface.listen(options.net);
   });
@@ -299,10 +339,20 @@ function smIoT(options) {
     host: 'sm.supermercato24.dev',
     enable_offline_queue: false
   };
+  var loggerDefaultOptions = {
+    filename: 'IoT',
+    standalone: true,
+    daily: true,
+    winston: {
+      level: 'debug',
+      json: false
+    }
+  };
 
   return wrapper({
     net: Object.assign(netDefaultOptions, ops.net),
     broker: Object.assign(brokerDefaultOptions, ops.broker),
+    logger: Object.assign(loggerDefaultOptions, ops.logger),
     maxListeners: Number(ops.maxListeners) || 10, // 0 means unlimited
     keepAlive: Boolean(ops.keepAlive),
     noDelay: ops.noDelay == false ? false : true,

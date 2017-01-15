@@ -1,6 +1,7 @@
 'use strict';
 
 var assert = require('assert');
+var fs = require('fs');
 var mqtt = require('mqtt');
 
 var message = 'helloWorld!';
@@ -38,7 +39,11 @@ describe('same user', function() {
 
   before(function(done) {
 
-    server = require('..')();
+    server = require('..')({
+      logger: {
+        filename: message
+      }
+    });
     server.once('listening', done).on('error', function(err) {
 
       done(new Error('shouldn\'t emit error event'));
@@ -1514,5 +1519,23 @@ describe('same user', function() {
 
     broker.quit();
     done();
+  });
+
+  after(function(done) {
+
+    var pad = function(val, len) {
+
+      var val = String(val);
+      var len = len || 2;
+      while (val.length < len) {
+        val = '0' + val;
+      }
+      return val;
+    };
+
+    var date = new Date();
+    var dailyF = date.getUTCFullYear() + '-' + pad(date.getUTCMonth() + 1)
+      + '-' + pad(date.getUTCDate()) + '.' + message;
+    fs.unlink(dailyF, done);
   });
 });
