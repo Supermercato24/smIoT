@@ -29,13 +29,14 @@ var returnCode = {
  */
 consumerInterface.on('message_buffer', function(channel, message) {
 
-  var funnels = channel.toString().split('/');
+  var channelString = channel.toString();
+  var funnels = channelString.split('/');
   var userId = funnels[0];
 
   if (dispatcher.emit(userId, funnels.slice(1).join('/'), message)) { // had user
     // pass
   } else { // remove subscriber
-    consumerInterface.unsubscribe(channel.toString());
+    consumerInterface.unsubscribe(channelString);
   }
 });
 
@@ -43,6 +44,14 @@ serverInterface.on('connection', function(stream) {
 
   var client = mqttConnection(stream);
 
+  /**
+   * connection between broker interface and server interface
+   * 
+   * @function publisher
+   * @param {Buffer} channel - client topic
+   * @param {Buffer} message - client message
+   * @param {Boolean} [pingreq] - check if this eventListener is alive
+   */
   var publisher = function(channel, message, pingreq) {
 
     if (pingreq) {
@@ -78,7 +87,7 @@ serverInterface.on('connection', function(stream) {
      */
 
     var response = {
-      returnCode: returnCode.CONNECTION_ACCEPTED
+      returnCode: returnCode.CONNECTION_REFUSED_SERVER_UNAVAILABLE
     };
 
     var userToken = packet.username;
@@ -90,8 +99,9 @@ serverInterface.on('connection', function(stream) {
     brokerClient.get(userToken, function(err, userId) {
 
       if (err) {
-        response.returnCode = returnCode.CONNECTION_REFUSED_SERVER_UNAVAILABLE;
+        // pass
       } else if (userId) { // client init
+        response.returnCode = returnCode.CONNECTION_ACCEPTED;
         client.authorized = true;
         client.topics = {};
         client.userId = userId;
@@ -179,7 +189,9 @@ serverInterface.on('connection', function(stream) {
     } else {
       client.destroy();
     }
-  }).on('close', function() {
+  });
+
+  client.on('close', function() {
 
     if (client.stream.destroyed === false) {
       client.destroy();
@@ -206,16 +218,21 @@ serverInterface.on('connection', function(stream) {
           client.topics = {};
         }
       });
-      consumerInterface.unsubscribe(client.userPrefix + '*');
     }
-  }).on('disconnect', function() {
+  });
+
+  client.on('disconnect', function() {
 
     client.destroy();
-  }).on('error', function(err) {
+  });
+
+  client.on('error', function(err) {
 
     console.error('mqtt err', err);
     client.destroy();
-  }).on('timeout', function() {
+  });
+
+  client.on('timeout', function() {
 
     console.log('timeout');
     client.destroy();
