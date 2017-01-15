@@ -27,6 +27,8 @@
     "redis": "2.6.4"
   },
   "devDependencies": {
+    "mqtt": "~2.2",
+    "mocha": "~3.2"
   },
   "engines": {
     "node": ">=4"
