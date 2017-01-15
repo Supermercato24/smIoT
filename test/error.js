@@ -118,6 +118,82 @@ describe('error', function() {
 
   });
 
+  describe('maxListeners', function() {
+
+    var client0;
+    var client1;
+
+    before(function(done) {
+
+      server = require('..')({
+        maxListeners: 1
+      });
+      server.once('listening', done).on('error', function(err) {
+
+        done(new Error('shouldn\'t emit error event'));
+      });
+    });
+
+    it('should connect and raise warning message', function(done) {
+
+      var doneCounter = 0;
+
+      client0 = mqtt.connect('mqtt://127.0.0.1', {
+        reconnectPeriod: 0,
+        username: userToken0
+      });
+      client1 = mqtt.connect('mqtt://127.0.0.1', {
+        reconnectPeriod: 0,
+        username: userToken0
+      });
+
+      client0.on('connect', function(packet) {
+
+        assert.ok(client0.connected);
+        assert.ifError(client0.reconnecting);
+        assert.equal(packet.cmd, 'connack');
+
+        client0.end(function(err) {
+
+          assert.ifError(err);
+          if (++doneCounter == 2) {
+            assert.equal(doneCounter, 2);
+            done();
+          }
+        });
+      }).on('error', function(err) {
+
+        done(new Error('shouldn\'t emit error event'));
+      });
+
+      client1.on('connect', function(packet) {
+
+        assert.ok(client1.connected);
+        assert.ifError(client1.reconnecting);
+        assert.equal(packet.cmd, 'connack');
+
+        client1.end(function(err) {
+
+          assert.ifError(err);
+          if (++doneCounter == 2) {
+            assert.equal(doneCounter, 2);
+            done();
+          }
+        });
+      }).on('error', function(err) {
+
+        done(new Error('shouldn\'t emit error event'));
+      });
+    });
+
+    after(function(done) {
+
+      server.close();
+      done();
+    });
+
+  });
+
   after(function(done) {
 
     broker.quit();

@@ -33,6 +33,8 @@ function wrapper(options) {
   var consumerInterface = brokerClient.duplicate();
   var dispatcher = new EventEmitter();
 
+  dispatcher.setMaxListeners(options.maxListeners);
+
   /**
    * move consumer outside from server. Otherwise duplicated messages are sent from every client, using dispatcher
    */
