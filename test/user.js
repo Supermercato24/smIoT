@@ -20,7 +20,9 @@ describe('same user', function() {
   before(function(done) {
 
     broker = require('../lib/broker');
-    broker = new broker.Client().client;
+    broker = new broker.Client({
+      host: 'sm.supermercato24.dev',
+    }).client;
     broker.once('ready', function() {
 
       broker.set(userToken0, userToken0, function(err) {
@@ -28,13 +30,19 @@ describe('same user', function() {
         assert.ifError(err);
         done();
       });
+    }).on('error', function(err) {
+
+      done(new Error('shouldn\'t emit error event'));
     });
   });
 
   before(function(done) {
 
-    server = require('..');
-    done();
+    server = require('..')();
+    server.once('listening', done).on('error', function(err) {
+
+      done(new Error('shouldn\'t emit error event'));
+    });
   });
 
   beforeEach(function(done) {
@@ -962,7 +970,7 @@ describe('same user', function() {
                   broker.publish(channel0, message, function(err, count) {
 
                     assert.ifError(err);
-                    assert.equal(count, 1, statement + 1);
+                    assert.ok(count <= 1);
                     if (++doneCounter == 2) {
                       assert.equal(doneCounter, 2);
                       done();
@@ -1014,7 +1022,7 @@ describe('same user', function() {
                   broker.publish(channel0, message, function(err, count) {
 
                     assert.ifError(err);
-                    assert.equal(count, 1, statement + 1);
+                    assert.ok(count <= 1);
                     if (++doneCounter == 2) {
                       assert.equal(doneCounter, 2);
                       done();
@@ -1496,4 +1504,15 @@ describe('same user', function() {
     });
   });
 
+  after(function(done) {
+
+    broker.quit();
+    done();
+  });
+
+  after(function(done) {
+
+    server.close();
+    done();
+  });
 });

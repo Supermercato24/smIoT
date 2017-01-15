@@ -6,11 +6,6 @@ var mqttConnection = require('mqtt-connection');
 
 var broker = require('./lib/broker');
 
-var serverInterface = new net.Server();
-var brokerClient = new broker.Client().client;
-var consumerInterface = brokerClient.duplicate();
-var dispatcher = new EventEmitter();
-
 var returnCode = {
   CONNECTION_ACCEPTED: 0x00,
   CONNECTION_REFUSED_UNACCEPTABLE_PROTOCOL: 0x01, // unacceptable protocol version
@@ -25,216 +20,283 @@ var returnCode = {
 };
 
 /**
- * move consumer outside from server. Otherwise duplicated messages are sent from every client, using dispatcher
+ * function wrapper
+ * 
+ * @function wrapper
+ * @param {Object} options - parsed options
+ * @returns {net.Server}
  */
-consumerInterface.on('message_buffer', function(channel, message) {
+function wrapper(options) {
 
-  var channelString = channel.toString();
-  var funnels = channelString.split('/');
-  var userId = funnels[0];
-
-  if (dispatcher.emit(userId, funnels.slice(1).join('/'), message)) { // had user
-    // pass
-  } else { // remove subscriber
-    consumerInterface.unsubscribe(channelString);
-  }
-});
-
-serverInterface.on('connection', function(stream) {
-
-  var client = mqttConnection(stream);
+  var serverInterface = new net.Server();
+  var brokerClient = new broker.Client(options.broker).client;
+  var consumerInterface = brokerClient.duplicate();
+  var dispatcher = new EventEmitter();
 
   /**
-   * connection between broker interface and server interface
-   * 
-   * @function publisher
-   * @param {Buffer} channel - client topic
-   * @param {Buffer} message - client message
-   * @param {Boolean} [pingreq] - check if this eventListener is alive
+   * move consumer outside from server. Otherwise duplicated messages are sent from every client, using dispatcher
    */
-  var publisher = function(channel, message, pingreq) {
+  consumerInterface.on('message_buffer', function(channel, message) {
 
-    if (pingreq) {
-      return;
+    var channelString = channel.toString();
+    var funnels = channelString.split('/');
+    var userId = funnels[0];
+
+    if (dispatcher.emit(userId, funnels.slice(1).join('/'), message)) { // had user
+      // pass
+    } else { // remove subscriber
+      consumerInterface.unsubscribe(channelString);
     }
+  });
 
-    if (client.authorized && client.topics[client.topicPrefix + channel]) {
-      client.publish({
-        qos: returnCode.SUBSCRIPTION_QOS_0,
-        topic: channel,
-        payload: message
-      });
-    }
-  };
+  /**
+   * transform net stream into mqtt client
+   */
+  serverInterface.on('connection', function(stream) {
 
-  client.on('connect', function(packet) {
+    stream.setKeepAlive(options.keepAlive);
+    stream.setNoDelay(options.noDelay);
+    stream.setTimeout(options.timeout);
+    var client = mqttConnection(stream);
 
     /**
-     * <pre>
-     * `version`: the protocol version string
-     * `versionNum`: the protocol version number
-     * `keepalive`: the client's keepalive period
-     * `clientId`: the client's ID
-     * `will`: an object with the following keys:
-     *   `topic`: the client's will topic
-     *   `payload`: the will message
-     *   `retain`: will retain flag
-     *   `qos`: will qos level
-     * `clean`: clean start flag
-     * `username`: v3.1 username
-     * `password`: v3.1 password
-     * </pre>
+     * connection between broker interface and server interface
+     * 
+     * @function publisher
+     * @param {Buffer} channel - client topic
+     * @param {Buffer} message - client message
+     * @param {Boolean} [pingreq] - check if this eventListener is alive
      */
+    var publisher = function(channel, message, pingreq) {
 
-    var response = {
-      returnCode: returnCode.CONNECTION_REFUSED_SERVER_UNAVAILABLE
+      if (pingreq) {
+        return;
+      }
+
+      if (client.authorized && client.topics[client.topicPrefix + channel]) {
+        client.publish({
+          qos: returnCode.SUBSCRIPTION_QOS_0,
+          topic: channel,
+          payload: message
+        });
+      }
     };
 
-    var userToken = packet.username;
-    if (!userToken) {
-      response.returnCode = returnCode.CONNECTION_REFUSED_NOT_AUTHORIZED;
-      return client.connack(response);
-    }
+    client.on('connect', function(packet) {
 
-    brokerClient.get(userToken, function(err, userId) {
+      /**
+       * <pre>
+       * `version`: the protocol version string
+       * `versionNum`: the protocol version number
+       * `keepalive`: the client's keepalive period
+       * `clientId`: the client's ID
+       * `will`: an object with the following keys:
+       *   `topic`: the client's will topic
+       *   `payload`: the will message
+       *   `retain`: will retain flag
+       *   `qos`: will qos level
+       * `clean`: clean start flag
+       * `username`: v3.1 username
+       * `password`: v3.1 password
+       * </pre>
+       */
 
-      if (err) {
-        // pass
-      } else if (userId) { // client init
-        response.returnCode = returnCode.CONNECTION_ACCEPTED;
-        client.authorized = true;
-        client.topics = {};
-        client.userId = userId;
-        client.userToken = userToken;
-        client.topicPrefix = userId + '/';
-        dispatcher.on(userId, publisher);
-      } else {
-        response.returnCode = returnCode.CONNECTION_REFUSED_BAD_CREDENTIALS;
+      var response = {
+        returnCode: returnCode.CONNECTION_REFUSED_SERVER_UNAVAILABLE
+      };
+
+      var userToken = packet.username;
+      if (!userToken) {
+        response.returnCode = returnCode.CONNECTION_REFUSED_NOT_AUTHORIZED;
+        return client.connack(response);
       }
-      client.connack(response);
-    });
-  });
 
-  client.on('subscribe', function(packet) {
-
-    var response = {
-      messageId: packet.messageId,
-      granted: []
-    };
-
-    var channels = [];
-    var notGranted = [];
-    var subscriptions = {};
-    for (var i = 0, ii = packet.subscriptions.length; i < ii; ++i) {
-      var topic = packet.subscriptions[i].topic;
-      notGranted[i] = returnCode.SUBSCRIPTION_FAILURE;
-
-      if (client.authorized) {
-        response.granted[i] = returnCode.SUBSCRIPTION_QOS_0;
-        topic = client.topicPrefix + topic;
-
-        if (subscriptions[topic] === undefined) { // unique
-          subscriptions[topic] = true;
-          channels[i] = topic;
-        }
-      }
-    }
-
-    if (client.authorized === false) {
-      response.granted = notGranted;
-      return client.suback(response);
-    }
-
-    // https://github.com/NodeRedis/node_redis/issues/1188
-    consumerInterface.subscribe(channels, function(err, latestChannel) {
-
-      if (err) {
-        response.granted = notGranted;
-      } else if (latestChannel) {
-        Object.assign(client.topics, subscriptions);
-      } else {
-        response.granted = notGranted;
-      }
-      client.suback(response);
-    });
-  });
-
-  client.on('unsubscribe', function(packet) {
-
-    var response = {
-      messageId: packet.messageId
-    };
-
-    if (!client.authorized) {
-      return client.unsuback(response);
-    }
-
-    var unsubscriptions = [];
-    for (var i = 0, ii = packet.unsubscriptions.length; i < ii; ++i) {
-      var topic = client.topicPrefix + packet.unsubscriptions[i];
-
-      if (client.topics[topic]) {
-        unsubscriptions.push(topic);
-        delete (client.topics[topic]);
-      }
-    }
-
-    client.unsuback(response);
-  });
-
-  client.on('pingreq', function() {
-
-    if (client.authorized) {
-      client.pingresp();
-    } else {
-      client.destroy();
-    }
-  });
-
-  client.on('close', function() {
-
-    if (client.stream.destroyed === false) {
-      client.destroy();
-    }
-
-    if (!client.authorized) {
-      return;
-    }
-
-    client.authorized = false;
-    dispatcher.removeListener(client.userId, publisher);
-
-    var unsubscriptions = Object.keys(client.topics);
-    if (!unsubscriptions) {
-      return;
-    }
-
-    if (!dispatcher.emit(client.userId, [], true)) {
-      consumerInterface.unsubscribe(unsubscriptions, function(err) {
+      brokerClient.get(userToken, function(err, userId) {
 
         if (err) {
           // pass
-        } else {
+        } else if (userId) { // client init
+          response.returnCode = returnCode.CONNECTION_ACCEPTED;
+          client.authorized = true;
           client.topics = {};
+          client.userId = userId;
+          client.userToken = userToken;
+          client.topicPrefix = userId + '/';
+          dispatcher.on(userId, publisher);
+        } else {
+          response.returnCode = returnCode.CONNECTION_REFUSED_BAD_CREDENTIALS;
         }
+        client.connack(response);
       });
-    }
+    });
+
+    client.on('subscribe', function(packet) {
+
+      var response = {
+        messageId: packet.messageId,
+        granted: []
+      };
+
+      var channels = [];
+      var notGranted = [];
+      var subscriptions = {};
+      for (var i = 0, ii = packet.subscriptions.length; i < ii; ++i) {
+        var topic = packet.subscriptions[i].topic;
+        notGranted[i] = returnCode.SUBSCRIPTION_FAILURE;
+
+        if (client.authorized) {
+          response.granted[i] = returnCode.SUBSCRIPTION_QOS_0;
+          topic = client.topicPrefix + topic;
+
+          if (subscriptions[topic] === undefined) { // unique
+            subscriptions[topic] = true;
+            channels[i] = topic;
+          }
+        }
+      }
+
+      if (client.authorized === false) {
+        response.granted = notGranted;
+        return client.suback(response);
+      }
+
+      // https://github.com/NodeRedis/node_redis/issues/1188
+      consumerInterface.subscribe(channels, function(err, latestChannel) {
+
+        if (err) {
+          response.granted = notGranted;
+        } else if (latestChannel) {
+          Object.assign(client.topics, subscriptions);
+        } else {
+          response.granted = notGranted;
+        }
+        client.suback(response);
+      });
+    });
+
+    client.on('unsubscribe', function(packet) {
+
+      var response = {
+        messageId: packet.messageId
+      };
+
+      if (!client.authorized) {
+        return client.unsuback(response);
+      }
+
+      var unsubscriptions = [];
+      for (var i = 0, ii = packet.unsubscriptions.length; i < ii; ++i) {
+        var topic = client.topicPrefix + packet.unsubscriptions[i];
+
+        if (client.topics[topic]) {
+          unsubscriptions.push(topic);
+          delete (client.topics[topic]);
+        }
+      }
+
+      client.unsuback(response);
+    });
+
+    client.on('pingreq', function() {
+
+      if (client.authorized) {
+        client.pingresp();
+      } else {
+        client.destroy();
+      }
+    });
+
+    client.on('close', function() {
+
+      if (client.stream.destroyed === false) {
+        client.destroy();
+      }
+
+      if (!client.authorized) {
+        return;
+      }
+
+      client.authorized = false;
+      dispatcher.removeListener(client.userId, publisher);
+
+      var unsubscriptions = Object.keys(client.topics);
+      if (!unsubscriptions) {
+        return;
+      }
+
+      if (!dispatcher.emit(client.userId, [], true)) {
+        consumerInterface.unsubscribe(unsubscriptions, function(err) {
+
+          if (err) {
+            // pass
+          } else {
+            client.topics = {};
+          }
+        });
+      }
+    });
+
+    client.on('disconnect', function() {
+
+      client.destroy();
+    });
+
+    client.on('error', function(err) {
+
+      console.error('mqtt err', err);
+      client.destroy();
+    });
+
+    client.on('timeout', function() {
+
+      console.log('timeout');
+      client.destroy();
+    });
   });
 
-  client.on('disconnect', function() {
+  serverInterface.on('error', function(err) {
 
-    client.destroy();
+    console.error('net err', err);
   });
 
-  client.on('error', function(err) {
+  brokerClient.once('ready', function() {
 
-    console.error('mqtt err', err);
-    client.destroy();
+    serverInterface.listen(1883);
   });
 
-  client.on('timeout', function() {
+  return serverInterface;
+}
 
-    console.log('timeout');
-    client.destroy();
+/**
+ * option setting
+ * 
+ * @exports smIoT
+ * @function smIoT
+ * @param {Object} options - various options. Check README.md
+ * @returns {net.Server}
+ */
+function smIoT(options) {
+
+  var ops = options || {};
+
+  var netDefaultOptions = {
+    port: 1883,
+    host: '127.0.0.1',
+    exclusive: false,
+  };
+  var brokerDefaultOptions = {
+    host: 'sm.supermercato24.dev',
+    enable_offline_queue: false
+  };
+
+  return wrapper({
+    net: Object.assign(netDefaultOptions, ops.net),
+    broker: Object.assign(brokerDefaultOptions, ops.broker),
+    maxListeners: Number(ops.maxListeners) || 10, // 0 means unlimited
+    keepAlive: Boolean(ops.keepAlive),
+    noDelay: ops.noDelay == false ? false : true,
+    timeout: Number(ops.timeout) || 0, // 0 means disabled
   });
-}).listen(1883);
+}
+
+module.exports = smIoT;

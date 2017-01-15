@@ -19,17 +19,25 @@ describe('client', function() {
   before(function(done) {
 
     broker = require('../lib/broker');
-    broker = new broker.Client().client;
+    broker = new broker.Client({
+      host: 'sm.supermercato24.dev',
+    }).client;
     broker.once('ready', function() {
 
       broker.del([ userToken0, userToken1 ], done);
+    }).on('error', function(err) {
+
+      done(new Error('shouldn\'t emit error event'));
     });
   });
 
   before(function(done) {
 
-    server = require('..');
-    done();
+    server = require('..')();
+    server.once('listening', done).on('error', function(err) {
+
+      done(new Error('shouldn\'t emit error event'));
+    });
   });
 
   describe('connection', function() {
@@ -700,4 +708,15 @@ describe('client', function() {
     });
   });
 
+  after(function(done) {
+
+    broker.quit();
+    done();
+  });
+
+  after(function(done) {
+
+    server.close();
+    done();
+  });
 });
