@@ -2,8 +2,9 @@
 
 var EventEmitter = require('events');
 var net = require('net');
-var mqttConnection = require('mqtt-connection');
 var logger = require('logger-request');
+var mqttConnection = require('mqtt-connection');
+var protect = require('protect');
 
 var broker = require('./lib/broker');
 
@@ -349,7 +350,7 @@ function smIoT(options) {
     }
   };
 
-  return wrapper({
+  return wrapper(protect({
     net: Object.assign(netDefaultOptions, ops.net),
     broker: Object.assign(brokerDefaultOptions, ops.broker),
     logger: Object.assign(loggerDefaultOptions, ops.logger),
@@ -357,7 +358,7 @@ function smIoT(options) {
     keepAlive: Boolean(ops.keepAlive),
     noDelay: ops.noDelay == false ? false : true,
     timeout: Number(ops.timeout) || 0, // 0 means disabled
-  });
+  }));
 }
 
 module.exports = smIoT;
