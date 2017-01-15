@@ -337,7 +337,6 @@ function smIoT(options) {
     exclusive: false,
   };
   var brokerDefaultOptions = {
-    host: 'sm.supermercato24.dev',
     enable_offline_queue: false
   };
   var loggerDefaultOptions = {

@@ -16,9 +16,7 @@ describe('error', function() {
   before(function(done) {
 
     broker = require('../lib/broker');
-    broker = new broker.Client({
-      host: 'sm.supermercato24.dev',
-    }).client;
+    broker = new broker.Client().client;
     broker.once('ready', function() {
 
       broker.del([ userToken0, userToken1 ], done);
