@@ -247,9 +247,8 @@ function wrapper(options) {
       client.destroy();
     });
 
-    client.on('timeout', function() {
+    stream.on('timeout', function() {
 
-      console.log('timeout');
       client.destroy();
     });
   });
