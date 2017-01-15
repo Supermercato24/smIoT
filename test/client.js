@@ -710,13 +710,13 @@ describe('client', function() {
 
   after(function(done) {
 
-    broker.quit();
+    server.close();
     done();
   });
 
   after(function(done) {
 
-    server.close();
+    broker.quit();
     done();
   });
 });

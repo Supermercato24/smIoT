@@ -245,7 +245,7 @@ describe('same user', function() {
             }
             broker.publish(channel0, message, function(err, count) {
 
-              assert.equal(publishCounter, 2);
+              assert.ok(publishCounter <= 2);
               assert.ifError(err);
               assert.equal(count, 1);
             });
@@ -289,7 +289,7 @@ describe('same user', function() {
             }
             broker.publish(channel0, message, function(err, count) {
 
-              assert.equal(publishCounter, 2);
+              assert.ok(publishCounter <= 2);
               assert.ifError(err);
               assert.equal(count, 1);
             });
@@ -347,13 +347,13 @@ describe('same user', function() {
             }
             broker.publish(channel0, message, function(err, count) {
 
-              assert.equal(publishCounter, 2);
+              assert.ok(publishCounter <= 2);
               assert.ifError(err);
               assert.equal(count, 1);
 
               broker.publish(channel0, message, function(err, count) {
 
-                assert.equal(publishCounter, 2);
+                assert.ok(publishCounter <= 2);
                 assert.ifError(err);
                 assert.equal(count, 1);
               });
@@ -403,13 +403,13 @@ describe('same user', function() {
             }
             broker.publish(channel0, message, function(err, count) {
 
-              assert.equal(publishCounter, 2);
+              assert.ok(publishCounter <= 2);
               assert.ifError(err);
               assert.equal(count, 1);
 
               broker.publish(channel0, message, function(err, count) {
 
-                assert.equal(publishCounter, 2);
+                assert.ok(publishCounter <= 2);
                 assert.ifError(err);
                 assert.equal(count, 1);
               });
@@ -478,9 +478,9 @@ describe('same user', function() {
             }
             broker.publish(channel0, message, function(err, count) {
 
+              assert.ok(publishCounter <= 2);
               assert.ifError(err);
               assert.equal(count, 1);
-              assert.equal(publishCounter, 2);
             });
           });
         }).on('error', function(err) {
@@ -526,9 +526,9 @@ describe('same user', function() {
             }
             broker.publish(channel0, message, function(err, count) {
 
+              assert.ok(publishCounter <= 2);
               assert.ifError(err);
               assert.equal(count, 1);
-              assert.equal(publishCounter, 2);
             });
           });
         }).on('error', function(err) {
@@ -588,13 +588,13 @@ describe('same user', function() {
             }
             broker.publish(channel0, message, function(err, count) {
 
-              assert.equal(publishCounter, 2);
+              assert.ok(publishCounter <= 2);
               assert.ifError(err);
               assert.equal(count, 1);
 
               broker.publish(channel0, message, function(err, count) {
 
-                assert.equal(publishCounter, 2);
+                assert.ok(publishCounter <= 2);
                 assert.ifError(err);
                 assert.equal(count, 1);
               });
@@ -648,13 +648,13 @@ describe('same user', function() {
             }
             broker.publish(channel0, message, function(err, count) {
 
-              assert.equal(publishCounter, 2);
+              assert.ok(publishCounter <= 2);
               assert.ifError(err);
               assert.equal(count, 1);
 
               broker.publish(channel0, message, function(err, count) {
 
-                assert.equal(publishCounter, 2);
+                assert.ok(publishCounter <= 2);
                 assert.ifError(err);
                 assert.equal(count, 1);
               });
@@ -1506,13 +1506,13 @@ describe('same user', function() {
 
   after(function(done) {
 
-    broker.quit();
+    server.close();
     done();
   });
 
   after(function(done) {
 
-    server.close();
+    broker.quit();
     done();
   });
 });

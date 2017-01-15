@@ -103,6 +103,8 @@ function wrapper(options) {
        * </pre>
        */
 
+      stream.pause(); // pauses the reading of data
+
       var response = {
         returnCode: returnCode.CONNECTION_REFUSED_SERVER_UNAVAILABLE
       };
@@ -110,7 +112,9 @@ function wrapper(options) {
       var userToken = packet.username;
       if (!userToken) {
         response.returnCode = returnCode.CONNECTION_REFUSED_NOT_AUTHORIZED;
-        return client.connack(response);
+        stream.resume();
+        client.connack(response);
+        return;
       }
 
       brokerClient.get(userToken, function(err, userId) {
@@ -128,6 +132,8 @@ function wrapper(options) {
         } else {
           response.returnCode = returnCode.CONNECTION_REFUSED_BAD_CREDENTIALS;
         }
+
+        stream.resume();
         client.connack(response);
       });
     });
@@ -159,7 +165,8 @@ function wrapper(options) {
 
       if (client.authorized === false) {
         response.granted = notGranted;
-        return client.suback(response);
+        client.suback(response);
+        return;
       }
 
       // https://github.com/NodeRedis/node_redis/issues/1188
@@ -183,7 +190,8 @@ function wrapper(options) {
       };
 
       if (!client.authorized) {
-        return client.unsuback(response);
+        client.unsuback(response);
+        return;
       }
 
       var unsubscriptions = [];
