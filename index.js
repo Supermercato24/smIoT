@@ -84,7 +84,7 @@ function wrapper(options) {
       }
     };
 
-    client.on('connect', function(packet) {
+    client.once('connect', function(packet) {
 
       /**
        * <pre>
@@ -120,7 +120,7 @@ function wrapper(options) {
       brokerClient.get(userToken, function(err, userId) {
 
         if (err) {
-          // pass
+          console.error('mqtt connect err', err);
         } else if (userId) { // client init
           response.returnCode = returnCode.CONNECTION_ACCEPTED;
           client.authorized = true;
@@ -173,6 +173,7 @@ function wrapper(options) {
       consumerInterface.subscribe(channels, function(err, latestChannel) {
 
         if (err) {
+          console.error('mqtt subscribe err', err);
           response.granted = notGranted;
         } else if (latestChannel) {
           Object.assign(client.topics, subscriptions);
@@ -216,7 +217,7 @@ function wrapper(options) {
       }
     });
 
-    client.on('close', function() {
+    client.once('close', function() {
 
       if (client.stream.destroyed === false) {
         client.destroy();
@@ -238,7 +239,7 @@ function wrapper(options) {
         consumerInterface.unsubscribe(unsubscriptions, function(err) {
 
           if (err) {
-            // pass
+            console.error('mqtt close err', err);
           } else {
             client.topics = {};
           }
@@ -246,18 +247,18 @@ function wrapper(options) {
       }
     });
 
-    client.on('disconnect', function() {
+    client.once('disconnect', function() {
 
       client.destroy();
     });
 
-    client.on('error', function(err) {
+    client.once('error', function(err) {
 
       console.error('mqtt err', err);
       client.destroy();
     });
 
-    stream.on('timeout', function() {
+    stream.once('timeout', function() {
 
       client.destroy();
     });
@@ -265,6 +266,7 @@ function wrapper(options) {
 
   serverInterface.on('error', function(err) {
 
+    // TODO add ErrorLogger
     console.error('net err', err);
   });
 
