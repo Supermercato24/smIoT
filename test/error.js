@@ -194,6 +194,54 @@ describe('error', function() {
 
   });
 
+  describe('net.port', function() {
+
+    var client0;
+
+    before(function(done) {
+
+      server = require('..')({
+        net: {
+          port: 1884
+        }
+      });
+      server.once('listening', done).on('error', function(err) {
+
+        done(new Error('shouldn\'t emit error event'));
+      });
+    });
+
+    it('shouldn\'t connect because wrong port', function(done) {
+
+      client0 = mqtt.connect('mqtt://127.0.0.1', {
+        connectTimeout: 50,
+        reconnectPeriod: 0,
+        username: userToken0
+      });
+
+      client0.on('connect', function(packet) {
+
+        done(new Error('shouldn\'t emit connect event'));
+      }).on('error', function(err) {
+
+        done(new Error('shouldn\'t emit error event'));
+      });
+
+      setTimeout(function() {
+
+        assert.equal(client0.connected, false);
+        done();
+      }, 100);
+    });
+
+    after(function(done) {
+
+      server.close();
+      done();
+    });
+
+  });
+
   after(function(done) {
 
     broker.quit();

@@ -262,7 +262,7 @@ function wrapper(options) {
 
   brokerClient.once('ready', function() {
 
-    serverInterface.listen(1883);
+    serverInterface.listen(options.net);
   });
 
   return serverInterface;
