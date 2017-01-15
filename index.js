@@ -311,6 +311,15 @@ function wrapper(options) {
     });
   });
 
+  brokerInterface.on('error', function(err) {
+
+    log('broker', {
+      pid: process.pid,
+      error: err.message,
+      stack: err.stack
+    });
+  });
+
   brokerInterface.once('ready', function() {
 
     serverInterface.listen(options.net);
