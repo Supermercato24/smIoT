@@ -24,6 +24,7 @@
   "main": "index.js",
   "dependencies": {
     "mqtt-connection": "3.0.0",
+    "logger-request": "3.7.3",
     "redis": "2.6.5"
   },
   "devDependencies": {
