@@ -1162,4 +1162,338 @@ describe('same user', function() {
     });
   });
 
+  describe('on/off', function() {
+
+    var client0;
+    var client1;
+
+    describe('single topic', function() {
+
+      it('should receive (1/1) message', function(done) {
+
+        client0 = mqtt.connect('mqtt://127.0.0.1', {
+          reconnectPeriod: 0,
+          username: userToken0
+        });
+        client1 = mqtt.connect('mqtt://127.0.0.1', {
+          reconnectPeriod: 0,
+          username: userToken0
+        });
+
+        client0.on('connect', function(packet) {
+
+          assert.ok(client0.connected);
+          assert.ifError(client0.reconnecting);
+          assert.equal(packet.cmd, 'connack');
+
+          client0.subscribe([ topic0 ], function(err, topics) {
+
+            assert.ifError(err);
+            for (var i = 0, ii = topics.length; i < ii; ++i) {
+              assert.equal(topics[i].topic, topic0);
+              assert.equal(topics[i].qos, 0);
+            }
+            assert.equal(ii, 1);
+
+            if (++publishCounter == 2) {
+              assert.equal(publishCounter, 2, '1/2 still subscribed');
+              return;
+            } else {
+              assert.notEqual(publishCounter, 2, '1/2 still unsubscribed');
+            }
+
+            client0.unsubscribe([ topic0 ], function(err, topics) {
+
+              assert.ifError(err);
+
+              broker.publish(channel0, message, function(err, count) {
+
+                assert.ifError(err);
+                assert.equal(count, 1);
+
+                client0.end(function(err) {
+
+                  assert.ifError(err);
+                  broker.publish(channel0, message, function(err, count) {
+
+                    assert.ifError(err);
+                    assert.equal(count, 1);
+                    if (++doneCounter == 2) {
+                      assert.equal(doneCounter, 2);
+                      done();
+                    }
+                  });
+                });
+              });
+            });
+          });
+        }).on('error', function(err) {
+
+          done(new Error('shouldn\'t emit error event'));
+        }).on('message', function(topic, message, packet) {
+
+          if (publishCounter == 2) {
+            assert.equal(publishCounter, 2, '1/2 still subscribed');
+            assert.equal(topic, topic0);
+            assert.equal(message.toString(), message);
+            assert.equal(packet.cmd, 'publish');
+
+            client0.end(function(err) {
+
+              assert.ifError(err);
+              if (++doneCounter == 2) {
+                assert.equal(doneCounter, 2);
+                done();
+              }
+            });
+          } else {
+            assert.notEqual(publishCounter, 2, '1/2 still unsubscribed');
+            done(new Error('shouldn\'t emit message event'));
+          }
+        });
+
+        client1.on('connect', function(packet) {
+
+          assert.ok(client1.connected);
+          assert.ifError(client1.reconnecting);
+          assert.equal(packet.cmd, 'connack');
+
+          client1.subscribe([ topic0 ], function(err, topics) {
+
+            assert.ifError(err);
+            for (var i = 0, ii = topics.length; i < ii; ++i) {
+              assert.equal(topics[i].topic, topic0);
+              assert.equal(topics[i].qos, 0);
+            }
+            assert.equal(ii, 1);
+
+            if (++publishCounter == 2) {
+              assert.equal(publishCounter, 2, '1/2 still subscribed');
+              return;
+            } else {
+              assert.notEqual(publishCounter, 2, '1/2 still unsubscribed');
+            }
+
+            client1.unsubscribe([ topic0 ], function(err, topics) {
+
+              assert.ifError(err);
+
+              broker.publish(channel0, message, function(err, count) {
+
+                assert.ifError(err);
+                assert.equal(count, 1);
+
+                client1.end(function(err) {
+
+                  assert.ifError(err);
+                  broker.publish(channel0, message, function(err, count) {
+
+                    assert.ifError(err);
+                    assert.equal(count, 1);
+                    if (++doneCounter == 2) {
+                      assert.equal(doneCounter, 2);
+                      done();
+                    }
+                  });
+                });
+              });
+            });
+          });
+        }).on('error', function(err) {
+
+          done(new Error('shouldn\'t emit error event'));
+        }).on('message', function(topic, message, packet) {
+
+          if (publishCounter == 2) {
+            assert.equal(publishCounter, 2, '1/2 still subscribed');
+            assert.equal(topic, topic0);
+            assert.equal(message.toString(), message);
+            assert.equal(packet.cmd, 'publish');
+
+            client1.end(function(err) {
+
+              assert.ifError(err);
+              if (++doneCounter == 2) {
+                assert.equal(doneCounter, 2);
+                done();
+              }
+            });
+          } else {
+            assert.notEqual(publishCounter, 2, '1/2 still unsubscribed');
+            done(new Error('shouldn\'t emit message event'));
+          }
+        });
+
+      });
+      it('should receive (1/2) message', function(done) {
+
+        client0 = mqtt.connect('mqtt://127.0.0.1', {
+          reconnectPeriod: 0,
+          username: userToken0
+        });
+        client1 = mqtt.connect('mqtt://127.0.0.1', {
+          reconnectPeriod: 0,
+          username: userToken0
+        });
+
+        client0.on('connect', function(packet) {
+
+          assert.ok(client0.connected);
+          assert.ifError(client0.reconnecting);
+          assert.equal(packet.cmd, 'connack');
+
+          client0.subscribe([ topic0 ], function(err, topics) {
+
+            assert.ifError(err);
+            for (var i = 0, ii = topics.length; i < ii; ++i) {
+              assert.equal(topics[i].topic, topic0);
+              assert.equal(topics[i].qos, 0);
+            }
+            assert.equal(ii, 1);
+
+            if (++publishCounter == 2) {
+              assert.equal(publishCounter, 2, '1/2 still subscribed');
+              return;
+            } else {
+              assert.notEqual(publishCounter, 2, '1/2 still unsubscribed');
+            }
+
+            client0.unsubscribe([ topic0 ], function(err, topics) {
+
+              assert.ifError(err);
+
+              broker.publish(channel0, message, function(err, count) {
+
+                assert.ifError(err);
+                assert.equal(count, 1);
+
+                broker.publish(channel0, message, function(err, count) {
+
+                  assert.ifError(err);
+                  assert.equal(count, 1);
+
+                  client0.end(function(err) {
+
+                    assert.ifError(err);
+                    broker.publish(channel0, message, function(err, count) {
+
+                      assert.ifError(err);
+                      assert.equal(count, 0);
+                      if (++doneCounter == 2) {
+                        assert.equal(doneCounter, 2);
+                        done();
+                      }
+                    });
+                  });
+                });
+              });
+            });
+          });
+        }).on('error', function(err) {
+
+          done(new Error('shouldn\'t emit error event'));
+        }).on('message', function(topic, message, packet) {
+
+          if (publishCounter == 2) {
+            assert.equal(publishCounter, 2, '1/2 still subscribed');
+            assert.equal(topic, topic0);
+            assert.equal(message.toString(), message);
+            assert.equal(packet.cmd, 'publish');
+
+            client0.end(function(err) {
+
+              assert.ifError(err);
+              if (++doneCounter == 2) {
+                assert.equal(doneCounter, 2);
+                done();
+              }
+            });
+          } else {
+            assert.notEqual(publishCounter, 2, '1/2 still unsubscribed');
+            done(new Error('shouldn\'t emit message event'));
+          }
+        });
+
+        client1.on('connect', function(packet) {
+
+          assert.ok(client1.connected);
+          assert.ifError(client1.reconnecting);
+          assert.equal(packet.cmd, 'connack');
+
+          client1.subscribe([ topic0 ], function(err, topics) {
+
+            assert.ifError(err);
+            for (var i = 0, ii = topics.length; i < ii; ++i) {
+              assert.equal(topics[i].topic, topic0);
+              assert.equal(topics[i].qos, 0);
+            }
+            assert.equal(ii, 1);
+
+            if (++publishCounter == 2) {
+              assert.equal(publishCounter, 2, '1/2 still subscribed');
+              return;
+            } else {
+              assert.notEqual(publishCounter, 2, '1/2 still unsubscribed');
+            }
+
+            client1.unsubscribe([ topic0 ], function(err, topics) {
+
+              assert.ifError(err);
+
+              broker.publish(channel0, message, function(err, count) {
+
+                assert.ifError(err);
+                assert.equal(count, 1);
+
+                broker.publish(channel0, message, function(err, count) {
+
+                  assert.ifError(err);
+                  assert.equal(count, 1);
+
+                  client1.end(function(err) {
+
+                    assert.ifError(err);
+                    broker.publish(channel0, message, function(err, count) {
+
+                      assert.ifError(err);
+                      assert.equal(count, 0);
+                      if (++doneCounter == 2) {
+                        assert.equal(doneCounter, 2);
+                        done();
+                      }
+                    });
+                  });
+                });
+              });
+            });
+          });
+        }).on('error', function(err) {
+
+          done(new Error('shouldn\'t emit error event'));
+        }).on('message', function(topic, message, packet) {
+
+          if (publishCounter == 2) {
+            assert.equal(publishCounter, 2, '1/2 still subscribed');
+            assert.equal(topic, topic0);
+            assert.equal(message.toString(), message);
+            assert.equal(packet.cmd, 'publish');
+
+            client1.end(function(err) {
+
+              assert.ifError(err);
+              if (++doneCounter == 2) {
+                assert.equal(doneCounter, 2);
+                done();
+              }
+            });
+          } else {
+            assert.notEqual(publishCounter, 2, '1/2 still unsubscribed');
+            done(new Error('shouldn\'t emit message event'));
+          }
+        });
+
+      });
+    });
+  });
+
 });
