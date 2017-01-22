@@ -1,6 +1,6 @@
 {
   "version": "0.0.1",
-  "name": "smIoT",
+  "name": "smiot",
   "description": "thesis",
   "keywords": [
     "supermercato24",
@@ -23,10 +23,15 @@
   },
   "main": "index.js",
   "dependencies": {
+    "logger-request": "3.7.3",
     "mqtt-connection": "3.0.0",
-    "redis": "2.6.4"
+    "protect": "0.3.0",
+    "redis": "2.6.5"
   },
   "devDependencies": {
+    "istanbul": "~0.4",
+    "mqtt": "~2.2",
+    "mocha": "~3.2"
   },
   "engines": {
     "node": ">=4"
