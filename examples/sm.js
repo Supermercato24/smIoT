@@ -11,7 +11,7 @@
 /*
  * initialize module
  */
-var smIoT = require('..'); // require('smIoT')
+var smIoT = require('..'); // require('smiot')
 
 smIoT({
   broker: {

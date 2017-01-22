@@ -1,9 +1,9 @@
-# [smIoT](https://github.com/Supermercato24/smIoT)
+# [smiot](https://github.com/Supermercato24/smiot)
 
-[![NPM version](https://img.shields.io/npm/v/smIoT.svg)](https://www.npmjs.com/package/smIoT)
-[![Linux Status](https://img.shields.io/travis/Supermercato24/smIoT.svg?label=linux)](https://travis-ci.org/Supermercato24/smIoT)
-[![Dependency Status](https://img.shields.io/david/Supermercato24/smIoT.svg)](https://david-dm.org/Supermercato24/smIoT)
-[![Coveralls](https://img.shields.io/coveralls/Supermercato24/smIoT.svg)](https://coveralls.io/r/Supermercato24/smIoT)
+[![NPM version](https://img.shields.io/npm/v/smiot.svg)](https://www.npmjs.com/package/smiot)
+[![Linux Status](https://img.shields.io/travis/Supermercato24/smiot.svg?label=linux)](https://travis-ci.org/Supermercato24/smiot)
+[![Dependency Status](https://img.shields.io/david/Supermercato24/smiot.svg)](https://david-dm.org/Supermercato24/smiot)
+[![Coveralls](https://img.shields.io/coveralls/Supermercato24/smiot.svg)](https://coveralls.io/r/Supermercato24/smiot)
 
 Thesis WIP
 
@@ -12,11 +12,11 @@ Thesis WIP
 Install through NPM
 
 ```bash
-npm install smIoT
+npm install smiot
 ```
 or
 ```bash
-git clone git://github.com/Supermercato24/smIoT.git
+git clone git://github.com/Supermercato24/smiot.git
 ```
 
 ## API
