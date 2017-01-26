@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "istanbul": "~0.4",
-    "mqtt": "~2.2",
+    "mqtt": "~2.3",
     "mocha": "~3.2"
   },
   "engines": {
