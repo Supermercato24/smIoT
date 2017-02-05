@@ -1,0 +1,75 @@
+\documentclass[a4paper, 12pt] {report}
+\renewcommand{\baselinestretch}{1.5}
+
+\usepackage[utf8]{inputenc}
+\usepackage[italian]{babel}
+\usepackage[T1]{fontenc}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage[rightcaption]{sidecap}
+\usepackage[font=footnotesize,labelfont=bf]{caption}
+\usepackage{lettrine}
+\usepackage{biblatex}
+\usepackage{url}
+\usepackage{hyperref}
+
+\addbibresource{ref.bib}
+
+\makeindex
+
+\title {Sincronizzazione dei Dati tramite protocollo MQTT}
+\author {Francesco Carnielli}
+\date{}
+
+\begin{document}
+
+\pagenumbering{gobble}
+\maketitle
+
+\newpage
+\thispagestyle{empty}
+\mbox{}
+
+\newpage
+\thispagestyle{empty}
+\mbox{}
+
+\section*{Ringraziamenti}
+Foobar
+
+\newpage
+\thispagestyle{empty}
+\mbox{}
+
+\tableofcontents
+\newpage
+
+\clearpage
+\pagenumbering{arabic}
+\setcounter{page}{1}
+
+\chapter{Introduzione}
+\input{intro}
+
+\chapter{Background e riferimenti}
+
+\section{HTTP}
+\input{1http}
+
+\section{MQTT}
+\input{1mqtt}
+
+\chapter{Soluzione adottata}
+
+\chapter{Valutazione sperimentale}
+
+\section{MQTT}
+\input{4mqtt}
+
+\chapter{Conclusioni}
+
+\medskip
+
+\printbibliography[heading=bibintoc, title={Bibliografia}]
+
+\end{document}
