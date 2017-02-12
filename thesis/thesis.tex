@@ -9,9 +9,12 @@
 \usepackage[rightcaption]{sidecap}
 \usepackage[font=footnotesize,labelfont=bf]{caption}
 \usepackage[sorting=none]{biblatex}
+\usepackage{listings}
+\usepackage{courier}
 \usepackage{lettrine}
 \usepackage{csquotes}
 \usepackage{eurosym}
+\usepackage{pifont}
 \usepackage{url}
 \usepackage{hyperref}
 
@@ -56,27 +59,55 @@
 \chapter{Introduzione}
 \input{intro}
 
+\newpage
+\thispagestyle{empty}
+\mbox{}
+
 \chapter{Background e riferimenti}
 \input{background}
 \section{HTTP}
-\input{1http}
+\input{http}
 \section{MQTT}
-\input{1mqtt}
+\input{mqtt}
+\section{Sicurezza}
+\input{security}
+
+\newpage
+\thispagestyle{empty}
+\mbox{}
 
 \chapter{Soluzione adottata}
-
+\input{solution}
 \section{Supermercato24}
 \input{supermercato24}
+\section{Socksberry}
+\input{socksberry}
+\section{SmIoT}
+\input{smiot}
+\section{Difficoltà affrontate}
+\input{difficulty}
+\section{Competitor}
+\input{competitor}
+
+\newpage
+\thispagestyle{empty}
+\mbox{}
 
 \chapter{Valutazione sperimentale}
+\input{evaluation}
+\section{Confronto quantitativo}
+\input{comparison}
+\section{Analisi pacchetti}
+\input{packet}
 
-\section{Confronto}
-\input{4mqtt}
+\newpage
+\thispagestyle{empty}
+\mbox{}
 
 \chapter{Conclusioni}
+\input{conclusion}
 
 \medskip
-
 \newrefcontext[sorting=none]
 \printbibliography[heading=bibintoc, title={Bibliografia}]
 
