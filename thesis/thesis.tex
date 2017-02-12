@@ -8,8 +8,10 @@
 \usepackage{graphicx}
 \usepackage[rightcaption]{sidecap}
 \usepackage[font=footnotesize,labelfont=bf]{caption}
+\usepackage[sorting=none]{biblatex}
 \usepackage{lettrine}
-\usepackage{biblatex}
+\usepackage{csquotes}
+\usepackage{eurosym}
 \usepackage{url}
 \usepackage{hyperref}
 
@@ -17,15 +19,17 @@
 
 \makeindex
 
-\title {Sincronizzazione dei Dati tramite protocollo MQTT}
-\author {Francesco Carnielli}
+\title{Sincronizzazione dei Dati tramite protocolli HTTP e MQTT}
+\author{Francesco Carnielli}
 \date{}
 
 \begin{document}
 
+% remove pagenumber from here
 \pagenumbering{gobble}
 \maketitle
 
+% new empty page (trick x 2)
 \newpage
 \thispagestyle{empty}
 \mbox{}
@@ -35,7 +39,7 @@
 \mbox{}
 
 \section*{Ringraziamenti}
-Foobar
+\input{acknowledgements}
 
 \newpage
 \thispagestyle{empty}
@@ -44,6 +48,7 @@ Foobar
 \tableofcontents
 \newpage
 
+% starting pagenumber from here
 \clearpage
 \pagenumbering{arabic}
 \setcounter{page}{1}
@@ -52,24 +57,27 @@ Foobar
 \input{intro}
 
 \chapter{Background e riferimenti}
-
+\input{background}
 \section{HTTP}
 \input{1http}
-
 \section{MQTT}
 \input{1mqtt}
 
 \chapter{Soluzione adottata}
 
+\section{Supermercato24}
+\input{supermercato24}
+
 \chapter{Valutazione sperimentale}
 
-\section{MQTT}
+\section{Confronto}
 \input{4mqtt}
 
 \chapter{Conclusioni}
 
 \medskip
 
+\newrefcontext[sorting=none]
 \printbibliography[heading=bibintoc, title={Bibliografia}]
 
 \end{document}
