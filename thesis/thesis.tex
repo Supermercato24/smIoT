@@ -4,12 +4,15 @@
 \usepackage[utf8]{inputenc}
 \usepackage[italian]{babel}
 \usepackage[T1]{fontenc}
+\usepackage[margin=2.5cm, lmargin=3.5cm]{geometry}
 \usepackage{float}
 \usepackage{graphicx}
 \usepackage[rightcaption]{sidecap}
-\usepackage[font=footnotesize,labelfont=bf]{caption}
+\usepackage[font=footnotesize, labelfont=bf]{caption}
 \usepackage[sorting=none]{biblatex}
 \usepackage{listings}
+\usepackage[toc,page]{appendix}
+\usepackage{soul}
 \usepackage{courier}
 \usepackage{lettrine}
 \usepackage{csquotes}
@@ -17,98 +20,155 @@
 \usepackage{pifont}
 \usepackage{url}
 \usepackage{hyperref}
+\usepackage{frontespizio}
 
 \addbibresource{ref.bib}
 
-\makeindex
-
-\title{Sincronizzazione dei Dati tramite protocolli HTTP e MQTT}
+\title{Sincronizzazione dei dati tramite protocolli HTTP e MQTT}
 \author{Francesco Carnielli}
 \date{}
+\makeindex
 
 \begin{document}
 
-% remove pagenumber from here
-\pagenumbering{gobble}
-\maketitle
+  \begin{frontespizio}
+    \Margini{3.5cm}{2.5cm}{2.5cm}{2.5cm}
+    \Universita{Verona}
+    \Facolta{Scienze Matematiche, Fisiche e Naturali}
+    \Corso[Laurea Triennale]{Informatica}
+    \Annoaccademico{2016--2017}
+    \Titolo{Sincronizzazione dei dati tramite protocolli HTTP e MQTT}
+    \Candidato[VR087968]{Francesco Carnielli}
+    \Relatore{Prof. Damiano Carra}
+    \Correlatore{Prof. X X}
+  \end{frontespizio}
 
-% new empty page (trick x 2)
-\newpage
-\thispagestyle{empty}
-\mbox{}
+  % remove pagenumber from here
+  \pagenumbering{gobble}
 
-\newpage
-\thispagestyle{empty}
-\mbox{}
+  \newpage
+  \thispagestyle{empty}
+  \mbox{}
 
-\section*{Ringraziamenti}
-\input{acknowledgements}
+  \clearpage
+  \pagenumbering{Roman}
+  \setcounter{page}{1}
 
-\newpage
-\thispagestyle{empty}
-\mbox{}
+  \begin{abstract}
+    \input{abstract}
+  \end{abstract}
 
-\tableofcontents
-\newpage
+  \chapter*{Ringraziamenti}
+    \label{ch:acknowledgements}
+    \input{acknowledgements}
 
-% starting pagenumber from here
-\clearpage
-\pagenumbering{arabic}
-\setcounter{page}{1}
+  \newpage
+  \thispagestyle{empty}
+  \mbox{}
 
-\chapter{Introduzione}
-\input{intro}
+  \tableofcontents
 
-\newpage
-\thispagestyle{empty}
-\mbox{}
+  \newpage
+  \thispagestyle{empty}
+  \mbox{}
 
-\chapter{Background e riferimenti}
-\input{background}
-\section{HTTP}
-\input{http}
-\section{MQTT}
-\input{mqtt}
-\section{Sicurezza}
-\input{security}
+  % starting pagenumber from here
+  \clearpage
+  \pagenumbering{arabic}
+  \setcounter{page}{1}
 
-\newpage
-\thispagestyle{empty}
-\mbox{}
+  \chapter{Introduzione}
+    \label{ch:intro}
+    \input{intro}
 
-\chapter{Soluzione adottata}
-\input{solution}
-\section{Supermercato24}
-\input{supermercato24}
-\section{Socksberry}
-\input{socksberry}
-\section{SmIoT}
-\input{smiot}
-\section{Difficoltà affrontate}
-\input{difficulty}
-\section{Competitor}
-\input{competitor}
+  \newpage
+  \thispagestyle{empty}
+  \mbox{}
 
-\newpage
-\thispagestyle{empty}
-\mbox{}
+  \chapter{Background e riferimenti}
+    \label{ch:background}
+    \input{background}
+      \section{Paradigmi di comunicazione}
+        \label{sec:async}
+        \input{async}
+      \section{HTTP}
+        \label{sec:http}
+        \input{http}
+      \section{MQTT}
+        \label{sec:mqtt}
+        \input{mqtt}
+      \section{Sicurezza}
+        \label{sec:security}
+        \input{security}
 
-\chapter{Valutazione sperimentale}
-\input{evaluation}
-\section{Confronto quantitativo}
-\input{comparison}
-\section{Analisi pacchetti}
-\input{packet}
+  \newpage
+  \thispagestyle{empty}
+  \mbox{}
 
-\newpage
-\thispagestyle{empty}
-\mbox{}
+  \chapter{Soluzione adottata}
+    \label{ch:solution}
+    \input{solution}
+      \section{Supermercato24}
+        \label{sec:supermercato24}
+        \input{supermercato24}
+      \section{Socksberry}
+        \label{sec:socksberry}
+        \input{socksberry}
+      \section{SmIoT}
+        \label{sec:smiot}
+        \input{smiot}
+      \section{Analisi Competitor}
+        \label{sec:competitor}
+        \input{competitor}
 
-\chapter{Conclusioni}
-\input{conclusion}
+  \newpage
+  \thispagestyle{empty}
+  \mbox{}
 
-\medskip
-\newrefcontext[sorting=none]
-\printbibliography[heading=bibintoc, title={Bibliografia}]
+  \chapter{Valutazione sperimentale}
+    \label{ch:evaluation}
+    \input{evaluation}
+      \section{Confronto quantitativo}
+        \label{sec:comparison}
+        \input{comparison}
+      \section{Analisi pacchetti}
+        \label{sec:packet}
+        \input{packet}
+
+  \newpage
+  \thispagestyle{empty}
+  \mbox{}
+
+  \chapter{Conclusioni}
+    \label{ch:conclusion}
+    \input{conclusion}
+
+  \newpage
+  \thispagestyle{empty}
+  \mbox{}
+
+  \appendix
+
+  \chapter{Sorgenti}
+    \section{Socksberry Controller}
+      \label{app:socksberry_controller}
+      \input{socksberry_controller}
+    \section{Socksberry View}
+      \label{app:socksberry_view}
+      \input{socksberry_view}
+    \section{SmIoT Controller}
+      \label{app:smiot_controller}
+      \input{smiot_controller}
+  \chapter{Test}
+    \section{Grafici risultati}
+      \label{app:chart}
+      \input{chart}
+    \section{Dettaglio dei pacchetti}
+      \label{app:hexdump}
+      \input{hexdump}
+
+  \medskip
+  \newrefcontext[sorting=none]
+  \printbibliography[heading=bibintoc, title={Bibliografia}]
 
 \end{document}
