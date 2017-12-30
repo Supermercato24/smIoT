@@ -242,7 +242,7 @@ function wrapper(options) {
 
       if (client.authorized) {
         client.pingresp();
-      } else {
+      } else if (client.stream.destroyed === false) {
         client.destroy();
       }
     });
@@ -290,7 +290,9 @@ function wrapper(options) {
 
     client.once('disconnect', function() {
 
-      client.destroy();
+      if (client.stream.destroyed === false) {
+        client.destroy();
+      }
     });
 
     client.once('error', function(err) {
@@ -301,12 +303,16 @@ function wrapper(options) {
         stack: err.stack
       });
 
-      client.destroy();
+      if (client.stream.destroyed === false) {
+        client.destroy();
+      }
     });
 
     stream.once('timeout', function() {
 
-      client.destroy();
+      if (client.stream.destroyed === false) {
+        client.destroy();
+      }
     });
   });
 
@@ -350,7 +356,7 @@ function smIoT(options) {
 
   var netDefaultOptions = {
     port: 1883,
-    host: '127.0.0.1',
+    host: '0.0.0.0',
     exclusive: false,
   };
   var brokerDefaultOptions = {
