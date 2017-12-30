@@ -1,0 +1,28 @@
+\subsection{Sincrono}
+\label{sub:asyncSincrono}
+
+Le architetture dei grandi sistemi informativi sono, ancora oggi, nella quasi totalità dei casi, costruite su piattaforme \textit{client}/\textit{server}.
+In questo paradigma due host interagiscono tra loro: il primo richiede dati e il secondo li fornisce.
+Questo tipo di comunicazione è denominato \verb+sincrono+ e segue questo flusso:
+\begin{enumerate}
+  \item il \textit{client} invia una richiesta
+  \item il \textit{server} elabora la richiesta e invia la risposta
+\end{enumerate}
+Durante tutto il periodo di interazione, gli interlocutori risultano impegnati esclusivamente nella transazione e quindi impossibilitati ad eseguire altre operazioni.
+Se il \textit{server} dovesse risultare impegnato nel rispondere, l'esperienza per il \textit{client} sarebbe imprevista.
+Le entità che possono interagire in un dato istante sono solo due, il che rende più difficoltosa la realizzazione di applicazioni che richiedono comunicazioni
+1:N o N:N.
+Nonostante i limiti, questo modello ha riscosso un incredibile successo.
+Ciò è da imputare sia alla semplicità del modello stesso sia alla sua adattabilità a moltissimi ambiti applicativi.
+
+Un'applicazione di consumo delle risorse basata su questo modello, interroga costantemente un servizio per aggiornare i propri valori.
+Perché un'applicazione del genere risulti utile, deve effettuare una serie di interrogazioni con un'alta frequenza per garantire un aggiornamento dei valori con un ritardo massimo stabilito.
+Minore è il ritardo massimo accettabile, maggiore è la frequenza delle interrogazioni e di conseguenza lo spreco di risorse (se la risorsa non è cambiata) \cite{PubSub}.
+
+\subsection{Asincrono}
+\label{sub:asyncAsincrono}
+
+Un paradigma di comunicazione dove esiste un totale disaccoppiamento tra produttore e consumatore dell'informazione è denominato \verb+asincrono+.
+I consumatori (\textit{subscriber}) possono esprimere il loro interesse verso un sottoinsieme di risorse ed essere successivamente notificati dell'aggiornamento generato da un produttore (\textit{publisher}).
+Tale comunicazione asincrona viene identificata come \textit{publish}/\textit{subscribe}.
+L'introduzione di questo nuovo modello all'interno di applicazioni esistenti ha permesso di migliorare l'uso delle risorse da parte delle applicazioni stesse, lasciando inalterato il modo di operare degli utenti.

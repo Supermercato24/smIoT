@@ -1,0 +1,15 @@
+Durante la fase progettuale sono stati analizzati i rispettivi competitor e altri servizi simili per osservare come hanno affrontato e risolto questo problema.
+
+Recentemente, gli sviluppatori della chat Messanger di Facebook, per salvaguardare il consumo della batteria e ridurre le latenza dei messaggi, hanno iniziato a migrare il loro codebase verso il protocollo \verb+MQTT+ \cite{Facebook}.
+Noti fornitori di servizi enterprise, quali AWS e IBM, hanno già sviluppato software \textit{ad hoc} basati su questo protocollo \cite{Ibm, Aws}.
+
+Amazon ha preferito rimanere al protocollo \verb+HTTP+ e tramite chiamate \verb+AJAX+ asincrone, propaga le operazioni sul carrello.
+
+Al contrario, Instacart, fornitore di servizi in stile Supermercato24, ha scelto di utilizzare il \verb+WebSocket+ come principale metodo di sincronizzazione dati.
+Usando il servizio Firebase (acquistato da Google), riesce ad esternalizzare questo task, mantenendo il carrello aggiornato \cite{Instacart}.
+Firebase è un servizio \verb+SaaS+ (\textit(Software as a service)) che permette il salvataggio e la sincronizzazione dei dati verso \textit{client} multipli.
+Attraverso \verb+WebSocket+ propaga la risorsa aggiornata ad ogni cambiamento.
+
+Si è ipotizzato che la differenza dell'implementazione tra Amazon e Instacart (e quindi Supermercato24) sia dovuto all'utilizzo medio delle due piattaforme da parte della clientela.
+Se su Amazon il carrello si attesta su pochi \verb+SKU+ (\textit{Stock Keeping Unit}) e quindi con un minor tempo d'acquisto, per gli e-commerce di categoria \textit{food-and-drinks} gli \verb+SKU+ sono mediamente maggiori, con conseguente aumento del tempo necessario per concludere l'ordine \cite{InstacartAnalysis}.
+Se su Supermercato24 il tempo medio di completamento di un ordine è di 40 minuti, è dunque necessario sincronizzare tempestivamente il carrello per poterlo concludere successivamente senza perdere dati tra i dispositivi.

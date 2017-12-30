@@ -1,0 +1,219 @@
+\begin{lstlisting}[language=java, captionpos=b, caption={Dispatcher broker MQTT}, basicstyle=\scriptsize\ttfamily]
+/**
+ * move consumer outside from server.
+ * Otherwise duplicated messages are sent from every client, using dispatcher
+ */
+consumerInterface.on('message_buffer', function(channel, message) {
+
+  var channelString = channel.toString();
+  var funnels = channelString.split('/');
+  var userId = funnels[0];
+
+  if (dispatcher.emit(userId, funnels.slice(1).join('/'), message)) { // had user
+    // pass
+  } else { // remove subscriber
+    consumerInterface.unsubscribe(channelString);
+  }
+});
+
+/**
+ * transform net stream into mqtt client
+ */
+serverInterface.on('connection', function(stream) {
+
+  stream.setKeepAlive(options.keepAlive);
+  stream.setNoDelay(options.noDelay);
+  stream.setTimeout(options.timeout);
+  var client = mqttConnection(stream);
+
+  /**
+   * connection between broker interface and server interface
+   *
+   * @function publisher
+   * @param {Buffer} channel - client topic
+   * @param {Buffer} message - client message
+   * @param {Boolean} [pingreq] - check if this eventListener is alive
+   */
+  var publisher = function(channel, message, pingreq) {
+
+    if (pingreq) {
+      return;
+    }
+
+    if (client.authorized && client.topics[client.topicPrefix + channel]) {
+      client.publish({
+        qos: returnCode.SUBSCRIPTION_QOS_0,
+        topic: channel,
+        payload: message
+      });
+    }
+  };
+
+  client.once('connect', function(packet) {
+
+    /**
+     * <pre>
+     * `version`: the protocol version string
+     * `versionNum`: the protocol version number
+     * `keepalive`: the client's keepalive period
+     * `clientId`: the client's ID
+     * `will`: an object with the following keys:
+     *   `topic`: the client's will topic
+     *   `payload`: the will message
+     *   `retain`: will retain flag
+     *   `qos`: will qos level
+     * `clean`: clean start flag
+     * `username`: v3.1 username
+     * `password`: v3.1 password
+     * </pre>
+     */
+    stream.pause(); // pauses the reading of data
+
+    var response = {
+      returnCode: returnCode.CONNECTION_REFUSED_SERVER_UNAVAILABLE
+    };
+
+    var userToken = packet.username;
+    if (!userToken) {
+      response.returnCode = returnCode.CONNECTION_REFUSED_NOT_AUTHORIZED;
+      stream.resume();
+      client.connack(response);
+      return;
+    }
+
+    brokerInterface.get(userToken, function(err, userId) {
+
+      if (err) {
+        // pass
+      } else if (userId) { // client init
+
+        dispatcher.on(userId, publisher);
+
+        client.authorized = true;
+        client.topics = {};
+        client.clientId = packet.clientId;
+        client.userId = userId;
+        client.userToken = userToken;
+        client.topicPrefix = userId + '/';
+
+        response.returnCode = returnCode.CONNECTION_ACCEPTED;
+      } else {
+        response.returnCode = returnCode.CONNECTION_REFUSED_BAD_CREDENTIALS;
+      }
+
+      stream.resume();
+      client.connack(response);
+    });
+  }).on('subscribe', function(packet) {
+
+    var response = {
+      messageId: packet.messageId,
+      granted: []
+    };
+
+    var channels = [];
+    var notGranted = [];
+    var subscriptions = {};
+    for (var i = 0, ii = packet.subscriptions.length; i < ii; ++i) {
+      var topic = packet.subscriptions[i].topic;
+      notGranted[i] = returnCode.SUBSCRIPTION_FAILURE;
+
+      if (client.authorized) {
+        response.granted[i] = returnCode.SUBSCRIPTION_QOS_0;
+        topic = client.topicPrefix + topic;
+
+        if (subscriptions[topic] === undefined) { // unique
+          subscriptions[topic] = true;
+          channels[i] = topic;
+        }
+      }
+    }
+
+    if (client.authorized === false) {
+      response.granted = notGranted;
+      client.suback(response);
+      return;
+    }
+
+    // https://github.com/NodeRedis/node_redis/issues/1188
+    consumerInterface.subscribe(channels, function(err, latestChannel) {
+
+      if (err) {
+        response.granted = notGranted;
+      } else if (latestChannel) {
+        Object.assign(client.topics, subscriptions);
+      } else {
+        response.granted = notGranted;
+      }
+      client.suback(response);
+    });
+  }).on('unsubscribe', function(packet) {
+
+    var response = {
+      messageId: packet.messageId
+    };
+
+    if (!client.authorized) {
+      client.unsuback(response);
+      return;
+    }
+
+    var unsubscriptions = [];
+    for (var i = 0, ii = packet.unsubscriptions.length; i < ii; ++i) {
+      var topic = client.topicPrefix + packet.unsubscriptions[i];
+
+      if (client.topics[topic]) {
+        unsubscriptions.push(topic);
+        delete (client.topics[topic]);
+      }
+    }
+
+    client.unsuback(response);
+  }).on('pingreq', function() {
+
+    if (client.authorized) {
+      client.pingresp();
+    } else {
+      client.destroy();
+    }
+  }).once('close', function() {
+
+    if (client.stream.destroyed === false) {
+      client.destroy();
+    }
+
+    if (!client.authorized) {
+      return;
+    }
+
+    client.authorized = false;
+    dispatcher.removeListener(client.userId, publisher);
+    var unsubscriptions = Object.keys(client.topics);
+    if (!unsubscriptions) {
+      return; // pass
+    }
+
+    if (!dispatcher.emit(client.userId, [], true)) {
+      consumerInterface.unsubscribe(unsubscriptions, function(err) {
+
+        if (err) {
+          // pass
+        } else {
+          client.topics = {};
+        }
+      });
+    }
+  }).once('disconnect', function() {
+
+    client.destroy();
+  }).once('error', function(err) {
+
+    client.destroy();
+  });
+
+  stream.once('timeout', function() {
+
+    client.destroy();
+  });
+});
+\end{lstlisting}

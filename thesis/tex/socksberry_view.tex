@@ -1,0 +1,78 @@
+\begin{lstlisting}[language=java, captionpos=b, caption={HTTP WebSocket subscriber}, basicstyle=\scriptsize\ttfamily]
+// define socket connection handler
+var manager, socket;
+
+// in case of network errors, init data with static (empty) model
+app.setOfflineModel = function() {
+  app.user = _data.user;
+  app.s24 = _data.s24;
+  app.offline = true;
+};
+
+// After manager has installed correctly the connection with server,
+// init socket and initialize event callback
+app.initSocket = function() {
+
+  socket = manager.socket('/socksberry');
+
+  // define socket io callback
+  socket.on('error', function(data) {
+
+    console.error(data);
+    app.offline = true;
+
+  }).on('disconnect', function() {
+
+    console.log('disconnect');
+    app.offline = true;
+
+  }).on('connect', function() {
+
+    console.log('connect');
+    socket.emit('init');
+    app.offline = true;
+    app.placeholderMap = false;
+
+  }).on('user', function(data) {
+
+    app.user = JSON.parse(data).data;
+
+  }).on('s24', function(data) {
+
+    app.s24 = JSON.parse(data).data;
+
+  }).on('init', function(data) {
+
+    var data = JSON.parse(data).data;
+    app.s24 = data.s24;
+    app.user = data.user;
+    app.offline = false;
+
+  });
+};
+
+// init Socket IO
+app.init = function() {
+
+  var url = config.protocol + '://' + config.ip + ':' + config.port;
+  var opts = {
+    reconnectionDelay: 10000
+  };
+  manager = io.Manager(url, opts);
+  // save reference, for debug purpose
+  // window.manager = manager;
+
+  // static (offline) initialization
+  app.setOfflineModel();
+  app.placeholderMap = true;
+  // init socket
+  app.initSocket();
+};
+
+// See https://github.com/Polymer/polymer/issues/1381
+window.addEventListener('WebComponentsReady', function() {
+  // imports are loaded and elements have been registered
+  // init data
+  app.init();
+});
+\end{lstlisting}

@@ -1,0 +1,97 @@
+Tramite software \textit{Wireshark} si è analizzato i principali pacchetti scambiati, mostrando prima il pacchetto \verb+HTTP+ e poi \verb+MQTT+.
+
+\bigskip
+\noindent
+Si sono usate le seguenti specifiche:
+\begin{itemize}
+\item analisi dettagliata dei pacchetti tramite software \textit{Wireshark}
+\item connessioni senza compressione e senza cifratura
+\item \textit{back-end} installato localmente emulando i dati di produzione
+\end{itemize}
+
+\subsection{Creazione della connessione}
+\label{sub:packetCreazione}
+
+Tramite protocollo \verb+HTTP+ viene effettuato l'\textit{handshake} necessario per creare il \textit{WebSocket}.
+Tra l'indirizzo \textit{0x0040} e \textit{0x0070} si può notare il cambio di protocollo, come evidenziato nella sezione \ref{subsec:httpWebsocket}.
+\verb+MQTT+ fornisce tutti i parametri necessari, si noti il token di sessione per autenticare la richiesta nel byte all'indirizzo \textit{0x0060}.
+
+\begin{lstlisting}[language=bash, label={lst:packetCreazioneHttp}, captionpos=b, caption={HTTP Upgrade Request per creare il socket WS}, basicstyle=\scriptsize\ttfamily]
+0000   02 00 00 00 45 00 00 e3 3e f2 40 00 40 06 00 00  ....E...>.@.@...
+0010   7f 00 00 01 7f 00 00 01 0b b8 dc 7f 01 d3 94 ac  ................
+0020   8d de 93 69 80 18 31 c3 fe d7 00 00 01 01 08 0a  ...i..1.........
+0030   33 3c a5 2b 33 3c a5 2a 48 54 54 50 2f 31 2e 31  3<.+3<.*HTTP/1.1
+0040   20 31 30 31 20 53 77 69 74 63 68 69 6e 67 20 50   101 Switching P
+0050   72 6f 74 6f 63 6f 6c 73 0d 0a 55 70 67 72 61 64  rotocols..Upgrad
+0060   65 3a 20 77 65 62 73 6f 63 6b 65 74 0d 0a 43 6f  e: websocket..Co
+0070   6e 6e 65 63 74 69 6f 6e 3a 20 55 70 67 72 61 64  nnection: Upgrad
+0080   65 0d 0a 53 65 63 2d 57 65 62 53 6f 63 6b 65 74  e..Sec-WebSocket
+0090   2d 41 63 63 65 70 74 3a 20 66 63 72 6f 6f 2b 47  -Accept: fcroo+G
+00a0   33 50 30 62 71 32 52 66 53 38 45 5a 39 6f 37 35  3P0bq2RfS8EZ9o75
+00b0   72 6d 4b 45 3d 0d 0a 53 65 63 2d 57 65 62 53 6f  rmKE=..Sec-WebSo
+00c0   63 6b 65 74 2d 45 78 74 65 6e 73 69 6f 6e 73 3a  cket-Extensions:
+00d0   20 70 65 72 6d 65 73 73 61 67 65 2d 64 65 66 6c   permessage-defl
+00e0   61 74 65 0d 0a 0d 0a                             ate....
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash, label={lst:packetCreazioneMqtt}, captionpos=b, caption={MQTT Creazione socket}, basicstyle=\scriptsize\ttfamily]
+0000   02 00 00 00 45 00 00 6c fe c2 40 00 40 06 00 00  ....E..l..@.@...
+0010   7f 00 00 01 7f 00 00 01 de 5b 07 5b 56 1f e3 58  .........[.[V..X
+0020   b5 ad d1 73 80 18 31 d7 fe 60 00 00 01 01 08 0a  ...s..1..`......
+0030   33 65 87 64 33 65 87 62 10 36 00 04 4d 51 54 54  3e.d3e.b.6..MQTT
+0040   04 c2 00 14 00 20 30 39 31 65 31 30 38 38 31 36  ..... 091e108816
+0050   33 66 34 64 65 61 39 30 35 66 64 32 32 32 61 64  3f4dea905fd222ad
+0060   34 61 66 36 61 66 00 06 66 6f 6f 62 61 72 00 00  4af6af..foobar..
+\end{lstlisting}
+
+\subsection{Sottoscrizione al topic}
+\label{sub:packetSottoscrizione}
+
+La sottoscrizione al topic \verb+HTTP+ viene effettuata in \verb+Javascript+ e viene spezzata in due richieste \verb+TCP+.
+\verb+MQTT+ permette la sottoscrizione simultanea a più argomenti contemporaneamente con una singola richiesta.
+Questo pacchetto viene inviato immediatamente dopo la creazione della connessione.
+Il dettaglio dei pacchetti sono apprezzabili nell'appendice \ref{app:packetSottoscrizione}.
+
+\subsection{Mantenimento della connessione}
+\label{sub:packetMantenimento}
+
+Il probe \textit{KeepAlive} in \verb+HTTP+ serve solo per controllare che la connessione sia ancora attiva, mentre \verb+MQTT+ si aspetta anche una risposta da parte il \textit{server}.
+
+\begin{lstlisting}[language=bash, label={lst:packetMantenimentoHttq}, captionpos=b, caption={HTTP Probe KeepAlive}, basicstyle=\scriptsize\ttfamily]
+0000   02 00 00 00 45 00 00 37 13 b4 40 00 40 06 00 00  ....E..7..@.@...
+0010   7f 00 00 01 7f 00 00 01 0b b8 dc 7f 01 d3 98 5d  ...............]
+0020   8d de 93 a7 80 18 31 c1 fe 2b 00 00 01 01 08 0a  ......1..+......
+0030   33 3d 06 83 33 3d 06 83 81 01 33                 3=..3=....3
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash, label={lst:packetMantenimentoMqtt}, captionpos=b, caption={MQTT Probe KeepAlive}, basicstyle=\scriptsize\ttfamily]
+0000   02 00 00 00 45 00 00 36 26 3c 40 00 40 06 00 00  ....E..6&<@.@...
+0010   7f 00 00 01 7f 00 00 01 de 5b 07 5b 56 1f e3 9c  .........[.[V...
+0020   b5 ad d1 7c 80 18 31 d7 fe 2a 00 00 01 01 08 0a  ...|..1..*......
+0030   33 65 e0 da 33 65 92 d7 c0 00                    3e..3e....
+\end{lstlisting}
+
+\subsection{Ricezione dati}
+\label{sub:packetRicezione}
+
+La serializzazione dei dati avviene attraverso il formato \verb+JSON+.
+I dettagli dei pacchetti sono apprezzabili nell'appendice \ref{app:packetRicezione}.
+
+\subsection{Chiusura della connessione}
+\label{sub:packetChiusura}
+
+Per entrambi i protocolli, la chiusura della connessione (senza interruzione forzata) viene semplicemente notificata al \textit{server}.
+
+\begin{lstlisting}[language=bash, label={lst:packetChiusuraHtttp}, captionpos=b, caption={HTTP Chiusura della connessione}, basicstyle=\scriptsize\ttfamily]
+0000   02 00 00 00 45 00 00 38 28 69 40 00 40 06 00 00  ....E..8(i@.@...
+0010   7f 00 00 01 7f 00 00 01 0b b8 dc 7f 01 d3 99 54  ...............T
+0020   8d de 93 c2 80 18 31 c1 fe 2c 00 00 01 01 08 0a  ......1..,......
+0030   33 3d f1 42 33 3d f1 42 88 02 03 e9              3=.B3=.B....
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash, label={lst:packetChiusuraMqtt}, captionpos=b, caption={MQTT Chiusura della connessione}, basicstyle=\scriptsize\ttfamily]
+0000   02 00 00 00 45 00 00 36 8f 40 40 00 40 06 00 00  ....E..6.@@.@...
+0010   7f 00 00 01 7f 00 00 01 de 5b 07 5b 56 1f e3 9e  .........[.[V...
+0020   b5 ad d2 59 80 18 31 d0 fe 2a 00 00 01 01 08 0a  ...Y..1..*......
+0030   33 65 f9 2a 33 65 eb 75 e0 00                    3e.*3e.u..
+\end{lstlisting}

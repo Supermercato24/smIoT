@@ -1,0 +1,75 @@
+\begin{lstlisting}[language=java, captionpos=b, caption={Doppio broker HTTP: KeyValue e WebSocket}, basicstyle=\scriptsize\ttfamily]
+var nsp = io.of('/socksberry').use(function(socket, next) {
+
+  next();
+});
+
+/*
+ * pub/sub pattern
+ */
+nsp.on('connection', function(socket) {
+
+  /*
+   * subscribe
+   */
+  var sub = cached(my); // KeyValue broker
+
+  /**
+   * subscribe local object as broker topic as callback
+   *
+   * @param {String} name - model name
+   * @param {Object} object - model object
+   * @param {Integer} counter - switch between KeyValue Database
+   */
+  modelsLoop(function(name, object, counter) {
+
+    sub.select(counter, function() {
+
+      sub.subscribe(name);
+    });
+  });
+
+  /**
+   * message from KeyValue broker
+   */
+  sub.on('message', function(channel, message) {
+
+    if (models[channel] === undefined) { // missing rigth channel
+      return; // next
+    }
+    var cmd = JSON.parse(message);
+
+    models[channel].update(cmd.event.split('.'), cmd.data,
+      function(err, res) { // update local model
+
+        if (res !== null) {
+
+          var out = {
+            status: true,
+            data: res
+          }; // stringify data, instead of send out directly
+          nsp.to(socket.id).emit(channel, JSON.stringify(out));
+        }
+      });
+  });
+
+  /**
+   * event from WebSocket broker
+   */
+  socket.on('disconnect', function() {
+
+    /**
+     * unsubscribe local object from broker topic as callback
+     *
+     * @param {String} name - model name
+     */
+    modelsLoop(function(name) {
+
+      sub.unsubscribe(name);
+    });
+  }).on('init', function() {
+
+    nsp.to(socket.id).emit('init', JSON.stringify(staticOut));
+  });
+});
+\end{lstlisting}

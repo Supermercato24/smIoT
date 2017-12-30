@@ -1,0 +1,172 @@
+Si è analizzato il consumo medio di risorse in un dispositivo \verb+Android+ in diversi ambienti e la velocità di ricezione dei messaggi \cite{PowerProfiling}.
+
+\bigskip
+\noindent
+Si sono usate le seguenti specifiche:
+\begin{itemize}
+\item cellulare modello Nexus 5 con \verb+Android 6+ completamente carico
+\item analisi dettagliata del dispositivo tramite software \textit{adb} e \textit{Battery Historian} \cite{Adb, BatteryHistorian}
+\item connessioni senza compressione e senza cifratura
+\item \textit{back-end} installato localmente emulando i dati di produzione
+\item libreria Socket.io@1.7.2 per il protocollo \verb+HTTP+
+\item libreria Mqtt@3.1.1 per il protocollo \verb+MQTT+
+\end{itemize}
+
+\bigskip
+\noindent
+Il flow seguito è il seguente:
+\begin{enumerate}
+\item collegamento del cellulare tramite cavo USB con la modalità sviluppatore attivata
+\item attivazione del demone di debugging \verb+./adb devices;+
+\item eliminazione dei precedenti dump
+  \begin{itemize}
+  \item \verb+./adb shell dumpsys procstats --reset;+
+  \item \verb+./adb shell dumpsys batterystats --reset;+
+  \end{itemize}
+\label{itm:comparisonDump}
+\item lancio di 1024 benchmark in base al protocollo e alla funzionalità testata
+\item download del dump \verb+./adb bugreport > bugreport.txt;+
+\item analisi del dump tramite \textit{Battery Historian} con applicativo \textit{Docker}
+\label{itm:comparisonHistorian}
+\item ripetizione degli step \ref{itm:comparisonDump}-\ref{itm:comparisonHistorian} per 10 campioni
+\item chiusa della modalità debug \verb+./adb kill-server;+
+\end{enumerate}
+
+\bigskip
+\noindent
+Le principali metriche osservate in ordine d'importanza sono:
+\begin{description}
+  \item[consumo della batteria] come requisito progettuale e principale indicatore della bontà sviluppata
+  \item[bandwidth] utilizzato, per garantire un maggior traffico dati
+  \item[CPU lato applicativo] per controllare l'utilizzo del protocollo da parte dell'applicazione
+  \item[CPU lato sistema] per controllare le \textit{system calls} necessarie a mantenere la connessione
+\end{description}
+
+\bigskip
+\noindent
+Mentre si è deciso di omettere:
+\begin{description}
+  \item[tempo in foreground] dato che la sincronizzazione utilizza \textit{subroutine}
+  \item[CPU lato applicativo] del \textit{server}, a favore della performance dei \textit{client}
+  \item[latenza dei messaggi] poiché dai primi esami risultava trascurabile
+\end{description}
+
+\subsection{Creazione della connessione}
+\label{sub:comparisonCreazione}
+
+Si è iniziato ad osservare il costo della connessione iniziale con entrambi i protocolli.
+Verrà analizzato il consumo di batteria medio per l'instaurazione della comunicazione.
+
+\begin{itemize}
+\item \verb+MQTT+ invia una serie di parametri iniziali quali: \textit{ClientId}, versione del protocollo, eventuale \textit{payload} di autenticazione e il metodo di \verb+QoS+ proposto dal client
+\item \verb+HTTP+ invia una serie di headers opzionali per identificare correttamente la risorsa che si vuole ottenere. Utilizzando la porta \verb+HTTP+, viene effettuata una richiesta \textit{Upgrade} per effettuare uno switch del protocollo
+\end{itemize}
+
+Nella sezione \ref{sub:packetCreazione} è possibile notare nel dettaglio l'invio di questi pacchetti.
+Si è analizzato la percentuale di batteria consumata, velocità dati e uso delle risorse in rapporto a un'ora di utilizzo \verb+Wi-Fi+.
+Nell'appendice \ref{app:charCreazione} sono apprezzabili i grafici di questi test.
+
+\begin{table}[H]
+  \begin{center}
+  \begin{tabular}{| c | l | l | l | l |}
+    \hline
+     & HTTP & deviazione std & MQTT & deviazione std \\ \hline
+    \% utilizzo batteria / ora & \textbf{1.55} & 0.08 & 1.70 & 0.09 \\ \hline
+    KBs / ora & \textbf{26649.28} & 2702.90 & 10770.50 & 1263.60 \\ \hline
+    User CPU time / ora & 8.62 & 0.27 & \textbf{7.00} & 0.55 \\ \hline
+    System CPU time / ora & 3.45 & 0.23 & \textbf{2.41} & 0.18 \\ \hline
+  \end{tabular}
+  \label{tab:comparisonCreazione2}
+  \caption{Metriche osservate in un'ora di tentativi di connessione}
+  \end{center}
+\end{table}
+
+La tabella mostra come l'iniziale richiesta tramite \verb+HTTP+ consumi meno risorse, data la ridotta quantità di dati inviata.
+Poiché \verb+MQTT+ si fa carico di effettuare da subito la sottoscrizione ai \textit{topic} necessari, richiede due risposte dal parte del server.
+Nel dettaglio, i pacchetti \ref{sub:packetCreazione} e \ref{sub:packetSottoscrizione} sono sequenziali.
+\verb+MQTT+ conferma la \textit{subscription} ad ogni riconnessione tramite il flag \textit{cleanstart=true}, così facendo sono sempre necessarie due richieste per connessione, ciò depone a favore del protocollo \verb+HTTP+.
+Disabilitando questa opzione si possono ottenere dei risultati simili per entrambi i protocolli, ma il \textit{server} dovrebbe salvarsi questa \textit{subscription} per un tempo determinato a priori.
+
+\subsection{Mantenimento della connessione}
+\label{sub:comparisonMantenimento}
+
+Stabilire tempestivamente se la connessione verso il \textit{server} (e viceversa) è ancora disponibile, senza aspettare un lungo timeout \verb+TCP/IP+, aumenta le probabilità che il successivo pacchetto dati venga spedito (o ricevuto) e in caso negativo, è compito del \textit{client} cercare di ristabilire la comunicazione.
+
+\begin{itemize}
+\item \verb+MQTT+ fornisce nativamente il metodo \verb+PINGREQ+ che invia un ping per sapere se la connessione è ancora valida
+\item \verb+HTTP+ non propone questa funzionalità, ma può essere integrata programmaticamente tramite un meccanismo di \textit{polling}
+\end{itemize}
+
+Sono stati effettuati diversi test per ogni timeout con un campione di dieci minuti.
+
+\begin{table}[H]
+  \begin{center}
+  \begin{tabular}{| c | l | l | l | l |}
+    \hline
+     & \multicolumn{4}{|c|}{\% utilizzo batteria / ora} \\ \cline{2-5}
+     & \multicolumn{2}{|c|}{3G} & \multicolumn{2}{|c|}{Wi-FI} \\ \hline
+    intervallo secondi \textit{KeepAlive} & HTTP & MQTT & HTTP & MQTT \\ \hline
+    60  & 1.11368 & \textbf{0.72280} & 0.15778 & \textbf{0.00994} \\ \hline
+    120 & 0.48512 & \textbf{0.31856} & 0.08713 & \textbf{0.00417} \\ \hline
+    240 & 0.33092 & \textbf{0.15842} & 0.02836 & \textbf{0.00169} \\ \hline
+    480 & 0.08078 & \textbf{0.07806} & 0.00763 & \textbf{0.00051} \\ \hline
+  \end{tabular}
+  \label{tab:comparisonMantenimento}
+  \caption{Consumo della batteria in entrambi gli ambienti per mantenere la connessione}
+  \end{center}
+\end{table}
+
+Il ping nativo \ref{sub:packetMantenimento} \verb+MQTT+ è più conveniente in entrambi gli ambienti rispetto all'emulazione programmatica tramite \textit{pooling}.
+Normalmente il costo della creazione della connessione è trascurabile, ma non il suo mantenimento nel tempo.
+Se si considera che il 50\% di traffico proviene da mobile e che ci vogliono 40 minuti per completare un ordine, con un timeout di 240 secondi si riesce a risparmiare il 48\% di batteria per ordine rispetto al protocollo \verb+HTTP+.
+
+\subsection{Ricezione dati}
+\label{sub:comparisonRicezione}
+
+La ricezione dei dati da parte dei \textit{client}, a seguito di un evento, è il principale utilizzo di questo pattern.
+I messaggi dovrebbero essere recapitati, indipendentemente dalla qualità e dalla congestione della linea.
+
+Sono stati inviati 1024 messaggi (1 byte ciascuno) il più velocemente possibile da parte del \textit{broker}.
+È stato abilitato il flag \verb+QoS 1+, inibiti i ping \textit{KeepAlive} e si deliberatamente degradato la rete con un elevato rumore da parte di altri software installati.
+
+\begin{table}[H]
+  \begin{center}
+  \begin{tabular}{| c | l | l | l | l |}
+    \hline
+     & \multicolumn{2}{|c|}{3G} & \multicolumn{2}{|c|}{Wi-FI} \\ \cline{2-5}
+     & HTTP & MQTT & HTTP & MQTT \\ \hline
+    messaggi / ora & 1462 & \textbf{160032} & 3382 & \textbf{263068} \\ \hline
+    messaggi ricevuti & 237 / 1024 & \textbf{1024 / 1024} & 521 / 1024 & \textbf{1024 / 1024} \\ \hline
+  \end{tabular}
+  \label{tab:comparisonRicezione}
+  \caption{Numero di messaggi ricevuti da parte del client}
+  \end{center}
+\end{table}
+
+Grazie al \verb+QoS+ nativo \verb+MQTT+, si fa carico di controllare che tutti i messaggi siano effettivamente recapitati.
+Data la criticità nella sincronizzazione dei dati, l'affidabilità della ricezione è un requisito iniziale.
+Se un messaggio non è stato ricevuto, viene rispedito dal \textit{server} il prima possibile.
+
+Non è stato previsto nessun meccanismo di \textit{queue} per discriminare se un messaggio è in ritardo, analizzando solo l'attendibilità dell'implementazione.
+Si potrebbe aggiungere un identificativo incrementale per ogni risorsa scambiata e scartare gli aggiornamenti obsoleti.
+
+Si è analizzato la percentuale di batteria consumata, velocità dati e uso delle risorse in rapporto a un'ora di utilizzo \verb+Wi-Fi+.
+Nell'appendice \ref{app:charRicezione} sono apprezzabili i grafici di questi test.
+
+\begin{table}[H]
+  \begin{center}
+  \begin{tabular}{| c | l | l | l | l |}
+    \hline
+     & HTTP & deviazione std & MQTT & deviazione std \\ \hline
+    \% utilizzo batteria / ora & 4.12 & 0.25 & \textbf{1.11} & 0.31 \\ \hline
+    KBs / ora & 15777.10 & 1888.67 & \textbf{23333.21} & 2720.71 \\ \hline
+    User CPU time / ora & 21.17 & 1.56 & \textbf{3.72} & 0.79 \\ \hline
+    System CPU time / ora & 3.33 & 0.17 & \textbf{2.46} & 0.45 \\ \hline
+  \end{tabular}
+  \label{tab:comparisonRicezione2}
+  \caption{Metriche osservate in un'ora di ricezione dati}
+  \end{center}
+\end{table}
+
+Dalla tabella si può evincere la leggerezza del protocollo \verb+MQTT+ confrontando il tempo speso da parte della \verb+CPU+ nello stato dell'applicazione.
+Nello specifico è stato adottato la stessa codifica \textit{application/json; charset=utf-8} osservabile nella sezione \ref{sub:packetRicezione}.

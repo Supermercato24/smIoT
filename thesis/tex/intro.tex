@@ -1,0 +1,28 @@
+\lettrine{I}{nternet} e le tecnologie informatiche digitali più generali, hanno permesso un'ampia base di cambiamenti nell'organizzazione delle attività economiche così profonde da giustificare il titolo di rivoluzione, definita sotto l'aspetto tecnologico e socio-culturale.
+L'informazione può essere più facilmente collezionata, salvata, processata, resa disponibile, comunicata ed utilizzata.
+La riduzione del costo di comunicazione comporterà un aumento del traffico, maggior accesso alle informazioni, autonomia personale nella scelta delle decisioni ed ultimamente nella dispersione delle attività economiche \cite{InternetRevolution}.
+
+Di riflesso, i protocolli e le strutture con cui queste interconnessioni vengono stabilite stanno subendo un'incessante evoluzione, mantenendo la rete accessibile a tutti come mezzo libero di informazione e comunicazione.
+La costante necessità di avere tutte le informazioni immediatamente disponibili, tempestivamente aggiornate ed il rapido aumento dei dispositivi connessi, che sono sia consumatori sia produttori di dati, richiede diversi approcci per adeguarsi a queste nuove esigenze.
+Il traffico dati generato si raddoppia approssimativamente ogni anno. Questo dato rappresenta una crescita estremamente rapida, maggiore di qualsiasi altro servizio di comunicazione.
+Se la mole di informazioni transitata su Internet continua a raddoppiare ogni anno, potrebbe essere necessaria un'altra forma della \textit{Legge di Moore} \cite{Moore}.
+
+Mantenere i dati sincronizzati attraverso diversi dispositivi connessi è diventato un pattern comune tra tutti i moderni software con funzionalità di rete.
+Ogni utente si aspetta, come \verb+UX+ (\textit{User Experience}), di aprire la propria casella di posta con il cellulare e vedere le stesse e-mail viste precedentemente su desktop. Alla ricezione di una nuova e-mail, dovrà ricevere il giusto avviso sui propri dispositivi.
+In un servizio di messaggistica istantanea, ci si aspetta di ricevere un messaggio il più velocemente possibile e non al prossimo caricamento dell'interfaccia.
+Modificando un file condiviso, questo deve essere aggiornato necessariamente con le ultime modifiche, per evitare di lavorare su una revisione già obsoleta.
+Con l'eterogeneità dei dispositivi e la ricerca di standard comuni, questo paradigma può non sembrare così semplice.
+La crescente mole di dati rappresenta un problema per le strutture sottostanti.
+Perciò diventa fondamentale trovare il giusto compromesso tra le richieste di design e la stabilità dell'implementazione.
+
+In questo elaborato verranno descritti i principali protocolli nello scambio e sincronizzazione delle informazioni in Internet, la differenza tra loro, alcuni \textit{TestCase} e la loro progettazione in un ambiente dinamico e in costante evoluzione come può essere una \textit{Start-Up}.
+Più precisamente sono stati analizzati i protocolli \verb+HTTP+ e \verb+MQTT+.
+Il primo, \textit{standard de facto}, per la navigazione attraverso pagine web e il secondo progettato per venire incontro alle esigenze dei nuovi dispositivi smart.
+Questi protocolli si differenziano sia per i principi di realizzazione sia per un differente approccio logico nel loro utilizzo.
+
+Si spiegherà come si è riuscito a mantenere i dati sincronizzati, a seguito di un \textit{trigger}, con diversi dispositivi connessi che condividono la stessa utenza o utilizzano la stessa risorsa.
+Si cercherà di risolvere il problema delle chiamate di aggiornamento di ciascun \textit{client} e i vari conflitti emersi.
+Inoltre è stato verificato che un'inadeguata analisi dei requisiti o un approccio non validato da test può provocare difficoltà non trascurabili ai propri utenti \cite{CPUSpin}.
+
+Nei capitoli successivi verrà ampliato quanto brevemente indicato nell'introduzione.
+Questi sono pertanto così strutturati: nel capitolo \ref{ch:background} verranno descritti i principi e le caratteristiche tecniche di questi protocolli, nel capitolo \ref{ch:solution} verranno presentate le soluzioni adottate e i problemi risolti, il capitolo \ref{ch:evaluation} illustrerà una valutazione sperimentale, infine nel capitolo \ref{ch:conclusion} sono riassunte le conclusioni dell’intero lavoro.

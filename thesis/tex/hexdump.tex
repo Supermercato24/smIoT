@@ -1,0 +1,101 @@
+\subsection{Sottoscrizione al topic}
+\label{app:packetSottoscrizione}
+
+\begin{lstlisting}[language=bash, label={lst:packetSottoscrizioneHttq}, captionpos=b, caption={HTTP Sottoscrizione al topic "socksberry"}, basicstyle=\scriptsize\ttfamily]
+0000   02 00 00 00 45 00 02 4b 1d 79 40 00 40 06 00 00  ....E..K.y@.@...
+0010   7f 00 00 01 7f 00 00 01 dc 75 0b b8 47 fe 66 15  .........u..G.f.
+0020   76 23 7f d6 80 18 31 3c 00 40 00 00 01 01 08 0a  v#....1<.@......
+0030   33 3c a5 6d 33 3c a5 27 50 4f 53 54 20 2f 73 6f  3<.m3<.'POST /so
+0040   63 6b 65 74 2e 69 6f 2f 3f 45 49 4f 3d 33 26 74  cket.io/?EIO=3&t
+0050   72 61 6e 73 70 6f 72 74 3d 70 6f 6c 6c 69 6e 67  ransport=polling
+0060   26 74 3d 4c 65 71 32 37 65 52 26 73 69 64 3d 58  &t=Leq27eR&sid=X
+0070   64 74 62 59 78 68 6c 61 76 4c 6d 4d 51 71 51 41  dtbYxhlavLmMQqQA
+0080   41 41 46 20 48 54 54 50 2f 31 2e 31 0d 0a 48 6f  AAF HTTP/1.1..Ho
+0090   73 74 3a 20 31 32 37 2e 30 2e 30 2e 31 3a 33 30  st: 127.0.0.1:30
+00a0   30 30 0d 0a 43 6f 6e 6e 65 63 74 69 6f 6e 3a 20  00..Connection:
+00b0   6b 65 65 70 2d 61 6c 69 76 65 0d 0a 43 6f 6e 74  keep-alive..Cont
+00c0   65 6e 74 2d 4c 65 6e 67 74 68 3a 20 31 36 0d 0a  ent-Length: 16..
+00d0   41 63 63 65 70 74 3a 20 2a 2f 2a 0d 0a 4f 72 69  Accept: */*..Ori
+00e0   67 69 6e 3a 20 68 74 74 70 3a 2f 2f 31 32 37 2e  gin: http://127.
+00f0   30 2e 30 2e 31 3a 33 30 30 30 0d 0a 55 73 65 72  0.0.1:3000..User
+0100   2d 41 67 65 6e 74 3a 20 4d 6f 7a 69 6c 6c 61 2f  -Agent: Mozilla/
+0110   35 2e 30 20 28 4d 61 63 69 6e 74 6f 73 68 3b 20  5.0 (Macintosh;
+0120   49 6e 74 65 6c 20 4d 61 63 20 4f 53 20 58 20 31  Intel Mac OS X 1
+0130   30 5f 31 32 5f 33 29 20 41 70 70 6c 65 57 65 62  0_12_3) AppleWeb
+0140   4b 69 74 2f 35 33 37 2e 33 36 20 28 4b 48 54 4d  Kit/537.36 (KHTM
+0150   4c 2c 20 6c 69 6b 65 20 47 65 63 6b 6f 29 20 43  L, like Gecko) C
+0160   68 72 6f 6d 65 2f 35 38 2e 30 2e 33 30 30 34 2e  hrome/58.0.3004.
+0170   33 20 53 61 66 61 72 69 2f 35 33 37 2e 33 36 0d  3 Safari/537.36.
+0180   0a 43 6f 6e 74 65 6e 74 2d 74 79 70 65 3a 20 74  .Content-type: t
+0190   65 78 74 2f 70 6c 61 69 6e 3b 63 68 61 72 73 65  ext/plain;charse
+01a0   74 3d 55 54 46 2d 38 0d 0a 44 4e 54 3a 20 31 0d  t=UTF-8..DNT: 1.
+01b0   0a 52 65 66 65 72 65 72 3a 20 68 74 74 70 3a 2f  .Referer: http:/
+01c0   2f 31 32 37 2e 30 2e 30 2e 31 3a 33 30 30 30 2f  /127.0.0.1:3000/
+01d0   0d 0a 41 63 63 65 70 74 2d 45 6e 63 6f 64 69 6e  ..Accept-Encodin
+01e0   67 3a 20 67 7a 69 70 2c 20 64 65 66 6c 61 74 65  g: gzip, deflate
+01f0   2c 20 62 72 0d 0a 41 63 63 65 70 74 2d 4c 61 6e  , br..Accept-Lan
+0200   67 75 61 67 65 3a 20 69 74 2d 49 54 2c 69 74 3b  guage: it-IT,it;
+0210   71 3d 30 2e 38 2c 65 6e 2d 55 53 3b 71 3d 30 2e  q=0.8,en-US;q=0.
+0220   36 2c 65 6e 3b 71 3d 30 2e 34 0d 0a 43 6f 6f 6b  6,en;q=0.4..Cook
+0230   69 65 3a 20 69 6f 3d 58 64 74 62 59 78 68 6c 61  ie: io=XdtbYxhla
+0240   76 4c 6d 4d 51 71 51 41 41 41 46 0d 0a 0d 0a     vLmMQqQAAAF....
+
+0000   02 00 00 00 45 00 00 44 c6 90 40 00 40 06 00 00  ....E..D..@.@...
+0010   7f 00 00 01 7f 00 00 01 dc 75 0b b8 47 fe 68 2c  .........u..G.h,
+0020   76 23 7f d6 80 18 31 3c fe 38 00 00 01 01 08 0a  v#....1<.8......
+0030   33 3c a5 6d 33 3c a5 27 31 33 3a 34 30 2f 73 6f  3<.m3<.'13:40/so
+0040   63 6b 73 62 65 72 72 79                          cksberry
+\end{lstlisting}
+
+\begin{lstlisting}[language=bash, label={lst:packetSottoscrizioneMqtt}, captionpos=b, caption={MQTT Sottoscrizione al topic "smiot"}, basicstyle=\scriptsize\ttfamily]
+0000   02 00 00 00 45 00 00 40 6c ed 40 00 40 06 00 00  ....E..@l.@.@...
+0010   7f 00 00 01 7f 00 00 01 de 5b 07 5b 56 1f e3 90  .........[.[V...
+0020   b5 ad d1 77 80 18 31 d7 fe 34 00 00 01 01 08 0a  ...w..1..4......
+0030   33 65 92 d6 33 65 87 65 82 0a 00 01 00 05 73 6d  3e..3e.e......sm
+0040   69 6f 74 00                                      iot.
+\end{lstlisting}
+
+\subsection{Ricezione dati}
+\label{app:packetRicezione}
+
+\begin{lstlisting}[label={lst:packetRicezioneHttp}, captionpos=b, caption={HTTP Payload dati inviato dal server}, basicstyle=\scriptsize\ttfamily]
+0000   02 00 00 00 45 00 01 22 ba 6d 40 00 40 06 00 00  ....E..".m@.@...
+0010   7f 00 00 01 7f 00 00 01 0b b8 dc 7f 01 d3 98 63  ...............c
+0020   8d de 93 b0 80 18 31 c1 ff 16 00 00 01 01 08 0a  ......1.........
+0030   33 3d b1 8c 33 3d 67 ec 81 7e 00 ea 34 32 2f 73  3=..3=g..~..42/s
+0040   6f 63 6b 73 62 65 72 72 79 2c 5b 22 75 73 65 72  ocksberry,["user
+0050   22 2c 22 7b 5c 22 73 74 61 74 75 73 5c 22 3a 74  ","{\"status\":t
+0060   72 75 65 2c 5c 22 64 61 74 61 5c 22 3a 7b 5c 22  rue,\"data\":{\"
+0070   72 65 67 69 73 74 72 61 74 69 6f 6e 5c 22 3a 7b  registration\":{
+0080   5c 22 64 61 69 6c 79 5c 22 3a 30 2c 5c 22 64 61  \"daily\":0,\"da
+0090   69 6c 79 5f 72 65 63 6f 72 64 5c 22 3a 31 35 39  ily_record\":159
+00a0   2c 5c 22 74 6f 74 61 6c 5c 22 3a 33 31 37 2c 5c  ,\"total\":317,\
+00b0   22 76 61 72 69 61 74 69 6f 6e 5c 22 3a 2d 31 30  "variation\":-10
+00c0   30 7d 2c 5c 22 73 65 73 73 69 6f 6e 5c 22 3a 7b  0},\"session\":{
+00d0   5c 22 64 61 69 6c 79 5c 22 3a 32 2c 5c 22 64 61  \"daily\":2,\"da
+00e0   69 6c 79 5f 72 65 63 6f 72 64 5c 22 3a 31 31 38  ily_record\":118
+00f0   33 2c 5c 22 74 6f 74 61 6c 5c 22 3a 32 35 39 35  3,\"total\":2595
+0100   31 2c 5c 22 76 61 72 69 61 74 69 6f 6e 5c 22 3a  1,\"variation\":
+0110   2d 39 38 2e 37 33 33 39 31 30 31 30 37 36 31 32  -98.733910107612
+0120   33 7d 7d 7d 22 5d                                3}}}"]
+\end{lstlisting}
+
+\begin{lstlisting}[label={lst:packetRicezioneMqtt}, captionpos=b, caption={MQTT Payload dati inviato dal server}, basicstyle=\scriptsize\ttfamily]
+0000   02 00 00 00 45 00 01 05 11 c0 40 00 40 06 00 00  ....E.....@.@...
+0010   7f 00 00 01 7f 00 00 01 07 5b de 5b b5 ad d1 88  .........[.[....
+0020   56 1f e3 9e 80 18 31 d5 fe f9 00 00 01 01 08 0a  V.....1.........
+0030   33 65 eb 75 33 65 eb 75 7b 5c 22 73 74 61 74 75  3e.u3e.u{\"statu
+0040   73 5c 22 3a 74 72 75 65 2c 5c 22 64 61 74 61 5c  s\":true,\"data\
+0050   22 3a 7b 5c 22 72 65 67 69 73 74 72 61 74 69 6f  ":{\"registratio
+0060   6e 5c 22 3a 7b 5c 22 64 61 69 6c 79 5c 22 3a 30  n\":{\"daily\":0
+0070   2c 5c 22 64 61 69 6c 79 5f 72 65 63 6f 72 64 5c  ,\"daily_record\
+0080   22 3a 31 35 39 2c 5c 22 74 6f 74 61 6c 5c 22 3a  ":159,\"total\":
+0090   33 31 37 2c 5c 22 76 61 72 69 61 74 69 6f 6e 5c  317,\"variation\
+00a0   22 3a 2d 31 30 30 7d 2c 5c 22 73 65 73 73 69 6f  ":-100},\"sessio
+00b0   6e 5c 22 3a 7b 5c 22 64 61 69 6c 79 5c 22 3a 32  n\":{\"daily\":2
+00c0   2c 5c 22 64 61 69 6c 79 5f 72 65 63 6f 72 64 5c  ,\"daily_record\
+00d0   22 3a 31 31 38 33 2c 5c 22 74 6f 74 61 6c 5c 22  ":1183,\"total\"
+00e0   3a 32 35 39 35 31 2c 5c 22 76 61 72 69 61 74 69  :25951,\"variati
+00f0   6f 6e 5c 22 3a 2d 39 38 2e 37 33 33 39 31 30 31  on\":-98.7339101
+0100   30 37 36 31 32 33 7d 7d 7d                       076123}}}
+\end{lstlisting}
