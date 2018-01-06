@@ -34,9 +34,10 @@
     "mocha": "~3.5"
   },
   "engines": {
-    "node": ">=4"
+    "node": ">=5"
   },
   "scripts": {
+    "prepare": "npm prune",
     "test": "mocha --bail --check-leaks",
     "test-cov": "istanbul cover node_modules/mocha/bin/_mocha --report lcovonly"
   },
